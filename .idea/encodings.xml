@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" native2AsciiForPropertiesFiles="true" defaultCharsetForPropertiesFiles="GB2312">
+    <file url="file://$PROJECT_DIR$/BSP/LCD/lcd.c" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/BSP/LCD/lcd_ex.c" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/BSP/TOUCH/ctiic.c" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/BSP/TOUCH/touch.c" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/Middlewares/lvgl/lvgl.h" charset="GB2312" />
+  </component>
+</project>
