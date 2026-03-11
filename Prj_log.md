@@ -20,7 +20,14 @@
 
 #### 触摸功能
 1.还会使用到24C02使用的是IIC协议，其实记录的是触摸校准的数据，保证触摸的精度
-
+2. 总共五个函数,组成了触摸的驱动函数
+```c
+void lv_port_indev_init(void)
+void touchpad_init(void)
+void touchpad_read(lv_indev_drv_t * indev_drv,lv_indev_data_t * data)
+void touchpad_is_pressed(void)
+void touchpad_get_xy()
+```
 
 ## bug
 时间：2026.3.9 
@@ -37,6 +44,10 @@
 target_link_libraries(${CMAKE_PROJECT_NAME} Public stm32mx)就行了
 main.h文件在stm32mx库里面，而lcd.h文件是主执行目标里面的，只要主目标链接了stm32mx库，就可以找到lcd.h文件
 但是奇怪的是lvgl库链接了stm32mx库就可以解决文件
+
+时间：2026.3.12
+1. lvgl显示模块，lv_port_disp.c文件修改
+2. lvgl触摸模块，lv_port_indev.c文件修改
 
 
 

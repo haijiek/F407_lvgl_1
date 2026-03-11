@@ -6,7 +6,8 @@
 #include "../ui.h"
 
 lv_obj_t * ui_Screen3 = NULL;
-lv_obj_t * ui_Button2 = NULL;
+lv_obj_t * ui_Button2_screen3 = NULL;
+
 // event funtions
 
 // build funtions
@@ -16,14 +17,14 @@ void ui_Screen3_screen_init(void)
     ui_Screen3 = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_Screen3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
-    ui_Button2 = lv_btn_create(ui_Screen3);
-    lv_obj_set_width(ui_Button2, 100);
-    lv_obj_set_height(ui_Button2, 50);
-    lv_obj_set_x(ui_Button2, -152);
-    lv_obj_set_y(ui_Button2, 3);
-    lv_obj_set_align(ui_Button2, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Button2, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
-    lv_obj_clear_flag(ui_Button2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    ui_Button2_screen3 = lv_btn_create(ui_Screen3);
+    lv_obj_set_width(ui_Button2_screen3, 100);
+    lv_obj_set_height(ui_Button2_screen3, 50);
+    lv_obj_set_x(ui_Button2_screen3, -152);
+    lv_obj_set_y(ui_Button2_screen3, 3);
+    lv_obj_set_align(ui_Button2_screen3, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Button2_screen3, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_Button2_screen3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
 }
 
@@ -33,6 +34,6 @@ void ui_Screen3_screen_destroy(void)
 
     // NULL screen variables
     ui_Screen3 = NULL;
-    ui_Button2 = NULL;
+    ui_Button2_screen3 = NULL;
 
 }

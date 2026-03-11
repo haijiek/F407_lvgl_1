@@ -59,7 +59,11 @@ target_include_directories(lvgl PUBLIC
 
 #----------link-------
 
-target_link_libraries(lvgl PUBLIC stm32cubemx)
+target_link_libraries(lvgl PUBLIC
+    stm32cubemx
+    BSP
+)
+target_link_libraries(ui PUBLIC lvgl)
 
 
 
