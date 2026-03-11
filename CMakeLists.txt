@@ -36,6 +36,7 @@ enable_language(C ASM)
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME}
+        BSP/LCD/lcd.h
 )
 
 # Add STM32CubeMX generated sources
@@ -55,7 +56,7 @@ file(GLOB_RECURSE BSP_SOURCES CONFIGURE_DEPENDS
 )
 
 
-target_sources(${CMAKE_PROJECT_NAME} PUBLIC
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${BSP_SOURCES}
     # Add user sources here
 )
@@ -69,6 +70,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
     BSP/IIC
     BSP/SPI
     BSP/SRAM
+    BSP/delay
     # Add user defined include paths
 )
 

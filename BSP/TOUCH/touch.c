@@ -32,7 +32,7 @@
 #include "lcd.h"
 #include "touch.h"
 #include "24cxx.h"
-// #include "ay/delay.h"
+#include "delay.h"
 
 
 _m_tp_dev tp_dev =

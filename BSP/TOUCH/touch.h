@@ -138,20 +138,3 @@ uint8_t tp_get_adjust_data(void);      /* 读取校准参数 */
 void tp_draw_big_point(uint16_t x, uint16_t y, uint16_t color); /* 画一个大点 */
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -24,7 +24,7 @@
 #ifndef __24CXX_H
 #define __24CXX_H
 
-#include "./SYSTEM/sys/sys.h"
+#include "main.h"
 
 
 #define AT24C01     127
