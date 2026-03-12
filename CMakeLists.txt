@@ -39,6 +39,7 @@ add_executable(${CMAKE_PROJECT_NAME}
         BSP/LCD/lcd.h
 )
 
+
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 add_subdirectory(Middlewares/lvgl)
@@ -87,3 +88,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 #    BSP
     # Add user defined libraries
 )
+
+message("00000")

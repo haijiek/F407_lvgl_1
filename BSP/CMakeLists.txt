@@ -8,7 +8,6 @@
 file(GLOB_RECURSE BSP_SRC CONFIGURE_DEPENDS *.c #BSP下面的所有源文件
 )
 
-
 set(BSP_INC
     24CXX
     delay
@@ -16,7 +15,7 @@ set(BSP_INC
     LED
     TOUCH
 )
-add_library(BSP STATIC)
+add_library(BSP OBJECT)
 
 #SRC
 target_sources(BSP PUBLIC
@@ -27,7 +26,6 @@ target_sources(BSP PUBLIC
 target_include_directories(BSP PUBLIC
     ${BSP_INC}
 )
-
 #Link_Lib
 target_link_libraries(BSP PUBLIC
     stm32cubemx

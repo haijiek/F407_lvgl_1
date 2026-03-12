@@ -12,9 +12,15 @@
 3. STM32_Drivers:stm32驱动库 驱动库是不能修改的，是已经配好的驱动函数
 3. FreeRTOS:FreeRTOS库
 5. lvgl:lvgl库
+6. BSP
 
 各个库链接情况
-stmcubemx-----
+stm32cubemx               
+stm32_drivers           stm32cubamx
+FreeRTOS                stm32cubemx lvgl ui
+lvgl                    stm32cubemx BSP
+BSP                     stm32cubemx
+UI                      lvgl
 
 ## 技术要点
 ### lcd触摸屏
@@ -64,7 +70,33 @@ main.h文件在stm32mx库里面，而lcd.h文件是主执行目标里面的，只要主目标链接了stm32m
 时间：2026.3.12
 1. lvgl显示模块，lv_port_disp.c文件修改（完成）
 2. lvgl触摸模块，lv_port_indev.c文件修改（完成）
-3. 胡乱链接库，导致很多重定义
+3. ##### 胡乱链接库，导致很多重定义（完成）????修改库链接就行
+关键修改
+```cmake
+target_link_libraries(lvgl PUBLIC
+    stm32cubemx
+    BSP
+    ui
+)
+target_link_libraries(ui PUBLIC lvgl)
+
+```
+时间：2026.3.13
+#### 进展
+1.FreeRTOS 学会调用lvgl时基，lv_tick_inc(5)（放在定时回调函数里面）,lv_task_handler()（放在普通任务里面）;完成显示
+#### 问题
+1.CLion的openocd下载成功率低30%，如何通过脚本解决？（完成），更换DAP,换成PWLINK，卖家给的DAPLINK是个
+垃圾，换成PWLINK次次成功，而且比keil快6秒以上。10秒左右下载成功。
+
+时间：2026.3.14
+1.触摸功能无法实现 ,可能是硬件IIC没有完全改对？
+2.Clion的调试不是很清楚？GDB到底是什么东西？PWLINK可以使用吗？
+
+时间：2026.3.20
+### 目标
+1.加上外接SRAM
+2.使得触摸流畅
+
 
 
 

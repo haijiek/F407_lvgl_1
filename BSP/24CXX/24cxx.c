@@ -38,11 +38,6 @@ void at24cxx_init(void)
 }
 
 /**
- * @brief       在AT24CXX指定地址读出一个数据
- * @param       readaddr: 开始读数的地址
- * @retval      读到的数据
- */
-/**
  * @brief       在 AT24CXX 指定地址读出一个数据
  * @param       addr: 开始读数的地址
  * @retval      读到的数据
