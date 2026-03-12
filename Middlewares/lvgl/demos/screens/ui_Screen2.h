@@ -15,7 +15,7 @@ extern void ui_Screen2_screen_init(void);
 extern void ui_Screen2_screen_destroy(void);
 extern void ui_event_Screen2(lv_event_t * e);
 extern lv_obj_t * ui_Screen2;
-extern lv_obj_t * ui_Label2;
+extern lv_obj_t * ui_Label3;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

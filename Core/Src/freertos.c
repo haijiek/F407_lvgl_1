@@ -65,6 +65,11 @@ const osThreadAttr_t touch_Task02_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
+/* Definitions for lvgl_Timer01 */
+osTimerId_t lvgl_Timer01Handle;
+const osTimerAttr_t lvgl_Timer01_attributes = {
+  .name = "lvgl_Timer01"
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -73,6 +78,7 @@ const osThreadAttr_t touch_Task02_attributes = {
 
 void Start_lvgl_Task01(void *argument);
 void Start_touch_Task02(void *argument);
+void lvgl_Callback01(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -93,6 +99,10 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
+
+  /* Create the timer(s) */
+  /* creation of lvgl_Timer01 */
+  lvgl_Timer01Handle = osTimerNew(lvgl_Callback01, osTimerPeriodic, NULL, &lvgl_Timer01_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
@@ -132,11 +142,14 @@ void Start_lvgl_Task01(void *argument)
   lv_init();
   lv_port_disp_init();
   lv_port_indev_init();
-
   ui_init();
+
+  osTimerStart(lvgl_Timer01Handle,5);
   /* Infinite loop */
   for(;;)
   {
+    lv_task_handler();
+    osDelay(5);
 
   }
     // lcd_show_num(10,190,aa,20,32,RED);
@@ -162,6 +175,14 @@ void Start_touch_Task02(void *argument)
     osDelay(1);
   }
   /* USER CODE END Start_touch_Task02 */
+}
+
+/* lvgl_Callback01 function */
+void lvgl_Callback01(void *argument)
+{
+  /* USER CODE BEGIN lvgl_Callback01 */
+  lv_tick_inc(5);
+  /* USER CODE END lvgl_Callback01 */
 }
 
 /* Private application code --------------------------------------------------*/

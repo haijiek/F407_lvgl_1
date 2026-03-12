@@ -67,6 +67,7 @@ target_include_directories(ui PUBLIC
 target_link_libraries(lvgl PUBLIC
     stm32cubemx
     BSP
+    ui
 )
 target_link_libraries(ui PUBLIC lvgl)
 
