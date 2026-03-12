@@ -31,10 +31,10 @@ void lv_port_disp_init(void)
      * -----------------------*/
     disp_init();
 
-    /* Example for 1) */
+    /* Example for 1) - Use minimal buffer to fit in RAM */
     static lv_disp_draw_buf_t draw_buf_dsc_1;
-    static lv_color_t buf_1[MY_DISP_HOR_RES * 10];                          /*A buffer for 10 rows*/
-    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
+    static lv_color_t buf_1[MY_DISP_HOR_RES * 1];                          /*A buffer for 1 row only*/
+    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 1);   /*Initialize the display buffer*/
 
     static lv_disp_drv_t disp_drv;                         /*Descriptor of a display driver*/
     lv_disp_drv_init(&disp_drv);                    /*Basic initialization*/
@@ -57,6 +57,9 @@ void lv_port_disp_init(void)
 static void disp_init(void)
 {
     /*You code here*/
+    lcd_init();
+    lcd_display_dir(1);
+
 }
 volatile bool disp_flush_enabled = true;
 
@@ -76,20 +79,18 @@ void disp_disable_update(void)
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
     if(disp_flush_enabled) {
-        /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
-        int32_t x;
-        int32_t y;
-        for(y = area->y1; y <= area->y2; y++) {
-            for(x = area->x1; x <= area->x2; x++) {
-                /*Put a pixel to the display. For example:*/
-                lcd_draw_point(x,y,color_p->full);
-                /*put_px(x, y, *color_p)*/
-                color_p++;
-            }
+        int32_t w = area->x2 - area->x1 + 1;
+        int32_t h = area->y2 - area->y1 + 1;
+        int32_t total_size = w * h;
+
+        lcd_set_window(area->x1, area->y1, w, h);
+        lcd_write_ram_prepare();
+
+        for(int32_t i = 0; i < total_size; i++) {
+            lcd_wr_data(color_p[i].full);
         }
     }
-    /*IMPORTANT!!!
-     *Inform the graphics library that you are ready with the flushing*/
     lv_disp_flush_ready(disp_drv);
 }
+
 #endif

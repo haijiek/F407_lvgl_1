@@ -26,6 +26,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
+#include "lvgl.h"
+#include "lv_port_disp.h"
+#include "lv_port_indev.h"
+#include "ui.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -125,28 +129,22 @@ void MX_FREERTOS_Init(void) {
 void Start_lvgl_Task01(void *argument)
 {
   /* USER CODE BEGIN Start_lvgl_Task01 */
-  uint8_t x = 0;
-  uint8_t lcd_id[12];
-  lcd_init();
+  lv_init();
+  lv_port_disp_init();
+  lv_port_indev_init();
+
+  ui_init();
   /* Infinite loop */
   for(;;)
   {
-    lcd_show_string(10, 40, 240, 32, 32, "STM32", RED);
-    lcd_show_string(10, 80, 240, 24, 24, "TFTLCD TEST", RED);
-    lcd_show_string(10, 110, 240, 16, 16, "ATOM@ALIENTEK", RED);
-    lcd_show_string(10, 230, 240, 16, 16, (char *)lcd_id, RED); /* 显示LCD ID */
-    x++;
-    lcd_show_num(10,160,x,20,32,RED);
-    if (lcddev.id == 0x9486) {
-      HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_9);
-      HAL_Delay(500);
-    }
+
+  }
     // lcd_show_num(10,190,aa,20,32,RED);
     // lcd_show_num(10,220,(uint32_t)&aa,20,32,RED);
     osDelay(1);
-  }
-  /* USER CODE END Start_lvgl_Task01 */
 }
+  /* USER CODE END Start_lvgl_Task01 */
+
 
 /* USER CODE BEGIN Header_Start_touch_Task02 */
 /**

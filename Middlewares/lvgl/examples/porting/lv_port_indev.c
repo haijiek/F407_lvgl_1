@@ -2,10 +2,8 @@
  * @file lv_port_indev_templ.c
  *
  */
-
 /*Copy this file as "lv_port_indev.c" and set this value to "1" to enable content*/
 #if 1
-
 /*********************
  *      INCLUDES
  *********************/
@@ -13,26 +11,18 @@
 #include "lvgl.h"
 #include "touch.h"
 
-
 static void touchpad_init(void);
 static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
 static bool touchpad_is_pressed(void);
 static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y);
-
 /**********************
  *  STATIC VARIABLES
  **********************/
 lv_indev_t * indev_touchpad;
-lv_indev_t * indev_button;
-
-static int32_t encoder_diff;
-static lv_indev_state_t encoder_state;
-
 
 void lv_port_indev_init(void)
 {
     static lv_indev_drv_t indev_drv;
-
 
      // ----------------Touchpad
 
@@ -45,11 +35,19 @@ void lv_port_indev_init(void)
     indev_drv.read_cb = touchpad_read;
     indev_touchpad = lv_indev_drv_register(&indev_drv);
 }
-
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
     /*Your code comes here*/
+    tp_dev.init();
+
+    /* 电阻屏坐标矫正 */
+    // if (key_scan(0) == KEY0_PRES)           /* KEY0按下,则执行校准程序 */
+    // {
+    //     lcd_clear(WHITE);                   /* 清屏 */
+    //     tp_adjust();                        /* 屏幕校准 */
+    //     tp_save_adjust_data();
+    // }
 }
 /*Will be called by the library to read the touchpad*/
 static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
@@ -85,7 +83,6 @@ static bool touchpad_is_pressed(void)
 static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
 {
     /*Your code comes here*/
-
     (*x) = tp_dev.x[0];
     (*y) = tp_dev.y[0];
 }

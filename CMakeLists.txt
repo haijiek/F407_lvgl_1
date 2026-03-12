@@ -52,9 +52,9 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 
 
-file(GLOB_RECURSE BSP_SOURCES CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/BSP/*.c" #BSP下面的所有源文件
-)
+#file(GLOB_RECURSE BSP_SOURCES CONFIGURE_DEPENDS
+#        "${CMAKE_CURRENT_SOURCE_DIR}/BSP/*.c" #BSP下面的所有源文件
+#)
 
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
@@ -65,13 +65,13 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
-    BSP/LCD
-    BSP/TOUCH
-    BSP/24CXX
-    BSP/IIC
-    BSP/SPI
-    BSP/SRAM
-    BSP/delay
+#    BSP/LCD
+#    BSP/TOUCH
+#    BSP/24CXX
+#    BSP/IIC
+#    BSP/SPI
+#    BSP/SRAM
+#    BSP/delay
     # Add user defined include paths
 )
 
@@ -84,6 +84,6 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
     lvgl
-    BSP
+#    BSP
     # Add user defined libraries
 )

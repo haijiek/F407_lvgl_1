@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#include "lvgl.h"
+#include "lvgl/lvgl.h"
 
 #include "ui_helpers.h"
 #include "ui_events.h"
@@ -19,7 +19,6 @@ extern "C" {
 ///////////////////// SCREENS ////////////////////
 
 #include "screens/ui_Screen1.h"
-#include "screens/ui_Screen2.h"
 
 ///////////////////// VARIABLES ////////////////////
 

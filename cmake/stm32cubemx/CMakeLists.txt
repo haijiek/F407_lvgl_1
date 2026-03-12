@@ -104,7 +104,11 @@ target_link_libraries(STM32_Drivers PUBLIC stm32cubemx)
 # Create FreeRTOS static library
 add_library(FreeRTOS OBJECT)
 target_sources(FreeRTOS PRIVATE ${FreeRTOS_Src})
-target_link_libraries(FreeRTOS PUBLIC stm32cubemx)
+target_link_libraries(FreeRTOS PUBLIC
+		stm32cubemx
+		lvgl
+		ui
+)
 
 # Add STM32CubeMX generated application sources to the project
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${MX_Application_Src})

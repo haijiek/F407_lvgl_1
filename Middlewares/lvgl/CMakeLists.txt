@@ -4,6 +4,7 @@ set(lvgl_SRC
 )
 
 set(lvgl_INC
+        ${CMAKE_SOURCE_DIR}/Middlewares
         ${CMAKE_CURRENT_SOURCE_DIR}
         src
         src/core
@@ -20,16 +21,15 @@ set(lvgl_INC
         ${CMAKE_SOURCE_DIR}/BSP/LCD
 )
 
-set(UI_SRC
-        demos/screens/ui_Screen1.c
-        demos/screens/ui_Screen2.c
-        #    screens/ui_Screen3.c
-        demos/ui.c
-        demos/components/ui_comp_hook.c
-        demos/ui_helpers.c
+file(GLOB_RECURSE UI_SRC CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/demos/*.c" #LVGL??????????????
 )
 
 set(UI_INC
+    demos
+    demos/components
+    demos/fonts
+    demos/screens
 )
 
 
@@ -38,22 +38,27 @@ add_library(ui STATIC)
 
 
 file(GLOB_RECURSE LVGL_SRC CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/*.c" #LVGL??????????????
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c" #LVGL??????????????
+        "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.c" #LVGL??????????????
+
 )
 
 
 #--------------target_source---------
 
-target_sources(lvgl PUBLIC
+target_sources(lvgl PRIVATE
         ${LVGL_SRC}
 )
-target_sources(ui PUBLIC
+target_sources(ui PRIVATE
         ${UI_SRC}
 )
 #----------target_include---------
 
 target_include_directories(lvgl PUBLIC
     ${lvgl_INC}
+)
+target_include_directories(ui PUBLIC
+    ${UI_INC}
 )
 
 

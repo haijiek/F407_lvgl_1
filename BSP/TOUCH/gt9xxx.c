@@ -114,7 +114,7 @@ uint8_t gt9xxx_init(void)
     gpio_init_struct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;     /* 高速 */
     HAL_GPIO_Init(GT9XXX_INT_GPIO_PORT, &gpio_init_struct); /* 初始化INT引脚 */
 
-    ct_iic_init();      /* 初始化电容屏的I2C总线 */
+    // ct_iic_init();      /* 初始化电容屏的I2C总线 */
     GT9XXX_RST(0);      /* 复位 */
     HAL_Delay(10);
     GT9XXX_RST(1);      /* 释放复位 */
