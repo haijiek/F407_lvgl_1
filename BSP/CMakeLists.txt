@@ -5,7 +5,8 @@
 # Tasks are added as separate sub-projects so as compilation errors in
 # one task don't affect another task.
 
-file(GLOB_RECURSE BSP_SRC CONFIGURE_DEPENDS *.c #BSP下面的所有源文件
+file(GLOB_RECURSE BSP_SRC CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/*.c" #BSP下面的所有源文件
 )
 
 set(BSP_INC
@@ -14,6 +15,7 @@ set(BSP_INC
     LCD
     LED
     TOUCH
+    SRAM
 )
 add_library(BSP OBJECT)
 

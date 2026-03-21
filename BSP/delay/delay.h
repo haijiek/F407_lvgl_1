@@ -7,5 +7,5 @@
 
 #include "main.h"
 void delay_us(uint32_t us);
-
+void delay_ms(uint32_t ms);
 #endif //F407_LVGL_1_DELAY_H
