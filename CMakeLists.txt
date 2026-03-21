@@ -59,7 +59,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    ${BSP_SOURCES}
+#    ${BSP_SOURCES}
     # Add user sources here
 )
 

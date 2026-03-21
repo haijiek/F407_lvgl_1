@@ -14,6 +14,7 @@ set(BSP_INC
     LCD
     LED
     TOUCH
+    SRAM
 )
 add_library(BSP OBJECT)
 
