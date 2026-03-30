@@ -49,10 +49,10 @@
 #define LV_MEM_CUSTOM 0
 #if LV_MEM_CUSTOM == 0
     /*Size of the memory available for `lv_mem_alloc()` in bytes (>= 2kB)*/
-    #define LV_MEM_SIZE (200U * 1024U)          /*[bytes] (reduced from 48KB to 32KB)*/
+    #define LV_MEM_SIZE (48U * 1024U)          /*[bytes]*/
 
     /*Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too.*/
-    #define LV_MEM_ADR  0x68000000    /*0: unused*/
+    #define LV_MEM_ADR 0x68000000     /*0: unused*/
     /*Instead of an address give a memory allocator that will be called to get a memory pool for LVGL. E.g. my_malloc*/
     #if LV_MEM_ADR == 0
         #undef LV_MEM_POOL_INCLUDE
@@ -230,7 +230,7 @@
  *-----------*/
 
 /*Enable the log module*/
-#define LV_USE_LOG 0
+#define LV_USE_LOG 1
 #if LV_USE_LOG
 
     /*How important log should be added:
@@ -363,11 +363,11 @@
  *https://fonts.google.com/specimen/Montserrat*/
 #define LV_FONT_MONTSERRAT_8  0
 #define LV_FONT_MONTSERRAT_10 0
-#define LV_FONT_MONTSERRAT_12 1
+#define LV_FONT_MONTSERRAT_12 0
 #define LV_FONT_MONTSERRAT_14 1
-#define LV_FONT_MONTSERRAT_16 1
-#define LV_FONT_MONTSERRAT_18 1
-#define LV_FONT_MONTSERRAT_20 1
+#define LV_FONT_MONTSERRAT_16 0
+#define LV_FONT_MONTSERRAT_18 0
+#define LV_FONT_MONTSERRAT_20 0
 #define LV_FONT_MONTSERRAT_22 0
 #define LV_FONT_MONTSERRAT_24 0
 #define LV_FONT_MONTSERRAT_26 0
@@ -540,11 +540,11 @@
 
 #define LV_USE_IMGBTN     1
 
-#define LV_USE_KEYBOARD   0
+#define LV_USE_KEYBOARD   1
 
-#define LV_USE_LED        0
+#define LV_USE_LED        1
 
-#define LV_USE_LIST       0
+#define LV_USE_LIST       1
 
 #define LV_USE_MENU       1
 
@@ -558,15 +558,15 @@
     #define LV_SPAN_SNIPPET_STACK_SIZE 64
 #endif
 
-#define LV_USE_SPINBOX    0
+#define LV_USE_SPINBOX    1
 
 #define LV_USE_SPINNER    1
 
 #define LV_USE_TABVIEW    1
 
-#define LV_USE_TILEVIEW   0
+#define LV_USE_TILEVIEW   1
 
-#define LV_USE_WIN        0
+#define LV_USE_WIN        1
 
 /*-----------
  * Themes
@@ -653,7 +653,7 @@
 #define LV_USE_BMP 0
 
 /* JPG + split JPG decoder library.
- * Split JPG is a custom format optimized for embedded systems. Uses f_open, f_read, etc*/
+ * Split JPG is a custom format optimized for embedded systems. */
 #define LV_USE_SJPG 0
 
 /*GIF decoder library*/

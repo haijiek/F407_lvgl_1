@@ -51,6 +51,8 @@ void lv_port_disp_init(void)
 
     /*Finally register the driver*/
     lv_disp_drv_register(&disp_drv);
+    HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_RESET);
+
 }
 
 /*Initialize your display and the required peripherals.*/
@@ -76,20 +78,25 @@ void disp_disable_update(void)
     disp_flush_enabled = false;
 }
 
+void lcd_draw_fast_rgb_color(int16_t sx, int16_t sy,int16_t ex, int16_t ey, uint16_t *color)
+{
+    uint16_t w = ex-sx+1;
+    uint16_t h = ey-sy+1;
+
+    lcd_set_window(sx, sy, w, h);
+    uint32_t draw_size = w * h;
+    lcd_write_ram_prepare();
+
+    for(uint32_t i = 0; i < draw_size; i++)
+    {
+        lcd_wr_data(color[i]);
+    }
+}
+
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    if(disp_flush_enabled) {
-        int32_t w = area->x2 - area->x1 + 1;
-        int32_t h = area->y2 - area->y1 + 1;
-        int32_t total_size = w * h;
+    lcd_draw_fast_rgb_color(area->x1,area->y1,area->x2,area->y2,(uint16_t*)color_p);
 
-        lcd_set_window(area->x1, area->y1, w, h);
-        lcd_write_ram_prepare();
-
-        for(int32_t i = 0; i < total_size; i++) {
-            lcd_wr_data(color_p[i].full);
-        }
-    }
     lv_disp_flush_ready(disp_drv);
 }
 

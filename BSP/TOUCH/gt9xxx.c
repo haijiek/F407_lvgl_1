@@ -30,21 +30,16 @@
 #include "string.h"
 #include "lcd.h"
 #include "touch.h"
+#include "ctiic.h"
 #include "gt9xxx.h"
-#include "i2c.h"
-
-
+#include "delay.h"
 
 
 /* 注意: 除了GT9271支持10点触摸之外, 其他触摸芯片只支持 5点触摸 */
 uint8_t g_gt_tnum = 5;      /* 默认支持的触摸屏点数(5点触摸) */
-/* 注意：除了 GT9271 支持 10 点触摸之外，其他触摸芯片只支持 5 点触摸 */
-
-/* GT9XXX I2C 设备地址 (7 位地址) */
-#define GT9XXX_I2C_ADDR     0x14
 
 /**
- * @brief       向 gt9xxx 写入一次数据
+ * @brief       向gt9xxx写入一次数据
  * @param       reg : 起始寄存器地址
  * @param       buf : 数据缓缓存区
  * @param       len : 写数据长度
@@ -52,24 +47,31 @@ uint8_t g_gt_tnum = 5;      /* 默认支持的触摸屏点数(5点触摸) */
  */
 uint8_t gt9xxx_wr_reg(uint16_t reg, uint8_t *buf, uint8_t len)
 {
-    HAL_StatusTypeDef status;
+    uint8_t i;
+    uint8_t ret = 0;
 
-    status = HAL_I2C_Mem_Write(&hi2c1,
-                               (uint16_t)(GT9XXX_I2C_ADDR << 1),
-                               reg,
-                               I2C_MEMADD_SIZE_16BIT,
-                               buf,
-                               len,
-                               100);
+    ct_iic_start();
+    ct_iic_send_byte(GT9XXX_CMD_WR);    /* 发送写命令 */
+    ct_iic_wait_ack();
+    ct_iic_send_byte(reg >> 8);         /* 发送高8位地址 */
+    ct_iic_wait_ack();
+    ct_iic_send_byte(reg & 0XFF);       /* 发送低8位地址 */
+    ct_iic_wait_ack();
 
-    return (status == HAL_OK) ? 0 : 1;
+    for (i = 0; i < len; i++)
+    {
+        ct_iic_send_byte(buf[i]);       /* 发数据 */
+        ret = ct_iic_wait_ack();
+
+        if (ret) break;
+    }
+
+    ct_iic_stop();  /* 产生一个停止条件 */
+    return ret;
 }
 
-// ... existing code ...
-
-
 /**
- * @brief       从 gt9xxx 读出一次数据
+ * @brief       从gt9xxx读出一次数据
  * @param       reg : 起始寄存器地址
  * @param       buf : 数据缓缓存区
  * @param       len : 读数据长度
@@ -77,17 +79,26 @@ uint8_t gt9xxx_wr_reg(uint16_t reg, uint8_t *buf, uint8_t len)
  */
 void gt9xxx_rd_reg(uint16_t reg, uint8_t *buf, uint8_t len)
 {
-    HAL_I2C_Mem_Read(&hi2c1,
-                     (uint16_t)(GT9XXX_I2C_ADDR << 1),
-                     reg,
-                     I2C_MEMADD_SIZE_16BIT,
-                     buf,
-                     len,
-                     100);
+    uint8_t i;
+
+    ct_iic_start();
+    ct_iic_send_byte(GT9XXX_CMD_WR);    /* 发送写命令 */
+    ct_iic_wait_ack();
+    ct_iic_send_byte(reg >> 8);         /* 发送高8位地址 */
+    ct_iic_wait_ack();
+    ct_iic_send_byte(reg & 0XFF);       /* 发送低8位地址 */
+    ct_iic_wait_ack();
+    ct_iic_start();
+    ct_iic_send_byte(GT9XXX_CMD_RD);    /* 发送读命令 */
+    ct_iic_wait_ack();
+
+    for (i = 0; i < len; i++)
+    {
+        buf[i] = ct_iic_read_byte(i == (len - 1) ? 0 : 1);  /* 读取数据 */
+    }
+
+    ct_iic_stop();  /* 产生一个停止条件 */
 }
-
-// ... existing code ...
-
 
 /**
  * @brief       初始化gt9xxx触摸屏
@@ -114,11 +125,11 @@ uint8_t gt9xxx_init(void)
     gpio_init_struct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;     /* 高速 */
     HAL_GPIO_Init(GT9XXX_INT_GPIO_PORT, &gpio_init_struct); /* 初始化INT引脚 */
 
-    // ct_iic_init();      /* 初始化电容屏的I2C总线 */
+    ct_iic_init();      /* 初始化电容屏的I2C总线 */
     GT9XXX_RST(0);      /* 复位 */
-    HAL_Delay(10);
+    delay_ms(10);
     GT9XXX_RST(1);      /* 释放复位 */
-    HAL_Delay(10);
+    delay_ms(10);
 
     /* INT引脚模式设置, 输入模式, 浮空输入 */
     gpio_init_struct.Pin = GT9XXX_INT_GPIO_PIN;
@@ -127,7 +138,7 @@ uint8_t gt9xxx_init(void)
     gpio_init_struct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;     /* 高速 */
     HAL_GPIO_Init(GT9XXX_INT_GPIO_PORT, &gpio_init_struct); /* 初始化INT引脚 */
 
-    HAL_Delay(100);
+    delay_ms(100);
     gt9xxx_rd_reg(GT9XXX_PID_REG, temp, 4); /* 读取触摸IC的ID */
     temp[4] = 0;
     
@@ -147,7 +158,7 @@ uint8_t gt9xxx_init(void)
     temp[0] = 0X02;
     gt9xxx_wr_reg(GT9XXX_CTRL_REG, temp, 1);    /* 软复位GT9XXX */
     
-    HAL_Delay(10);
+    delay_ms(10);
     
     temp[0] = 0X00;
     gt9xxx_wr_reg(GT9XXX_CTRL_REG, temp, 1);    /* 结束复位, 进入读坐标状态 */
@@ -203,7 +214,7 @@ uint8_t gt9xxx_scan(uint8_t mode)
                 {
                     gt9xxx_rd_reg(GT9XXX_TPX_TBL[i], buf, 4);   /* 读取XY坐标值 */
 
-                    if (lcddev.id == 0X5510 || lcddev.id == 0X9806 || lcddev.id == 0X7796)     /* 4.3寸800*480 和 3.5寸480*320 MCU屏 */
+                    if (lcddev.id == 0X5510 )     /* 4.3寸800*480 和 3.5寸480*320 MCU屏 */
                     {
                         if (tp_dev.touchtype & 0X01)    /* 横屏 */
                         {
@@ -216,21 +227,10 @@ uint8_t gt9xxx_scan(uint8_t mode)
                             tp_dev.y[i] = ((uint16_t)buf[3] << 8) + buf[2];
                         }
                     }
-                    else    /* 其他型号 */
-                    {
-                        if (tp_dev.touchtype & 0X01)    /* 横屏 */
-                        {
-                            tp_dev.x[i] = ((uint16_t)buf[1] << 8) + buf[0];
-                            tp_dev.y[i] = ((uint16_t)buf[3] << 8) + buf[2];
-                        }
-                        else
-                        {
-                            tp_dev.x[i] = lcddev.width - (((uint16_t)buf[3] << 8) + buf[2]);
-                            tp_dev.y[i] = ((uint16_t)buf[1] << 8) + buf[0];
-                        }
-                    }
-
                     //printf("x[%d]:%d,y[%d]:%d\r\n", i, tp_dev.x[i], i, tp_dev.y[i]);
+                    HAL_GPIO_TogglePin(GPIOF,GPIO_PIN_9);
+
+
                 }
             }
 
@@ -274,34 +274,8 @@ uint8_t gt9xxx_scan(uint8_t mode)
     }
 
     if (t > 240)t = 10; /* 重新从10开始计数 */
+    // HAL_GPIO_TogglePin(GPIOF,GPIO_PIN_9);
+
 
     return res;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

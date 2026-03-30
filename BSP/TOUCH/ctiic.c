@@ -220,8 +220,3 @@ uint8_t ct_iic_read_byte(unsigned char ack)
 }
 
 
-
-
-
-
-

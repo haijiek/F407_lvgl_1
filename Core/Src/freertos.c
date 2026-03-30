@@ -55,8 +55,8 @@
 osThreadId_t lvgl_TaskHandle;
 const osThreadAttr_t lvgl_Task_attributes = {
   .name = "lvgl_Task",
-  .stack_size = 1024 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 2048 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for touch_Task02 */
 osThreadId_t touch_Task02Handle;
@@ -142,18 +142,16 @@ void Start_lvgl_Task01(void *argument)
   lv_init();
   lv_port_disp_init();
   lv_port_indev_init();
-  ui_init();
 
+  ui_init();
   osTimerStart(lvgl_Timer01Handle,5);
   /* Infinite loop */
   for(;;)
   {
-    lv_task_handler();
-    osDelay(5);
-
-    // lcd_show_num(10,190,aa,20,32,RED);
-    // lcd_show_num(10,220,(uint32_t)&aa,20,32,RED);
-    osDelay(1);
+    uint16_t times_to_next =  lv_timer_handler();
+    if (times_to_next > 0) {
+      osDelay(times_to_next);
+    }
 }
   /* USER CODE END Start_lvgl_Task01 */
 }

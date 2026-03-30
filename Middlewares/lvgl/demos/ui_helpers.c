@@ -284,7 +284,6 @@ int32_t _ui_anim_callback_get_image_zoom(lv_anim_t * a)
 int32_t _ui_anim_callback_get_image_angle(lv_anim_t * a)
 
 {
-
     ui_anim_user_data_t * usr = (ui_anim_user_data_t *)a->user_data;
     return lv_img_get_angle(usr->target);
 

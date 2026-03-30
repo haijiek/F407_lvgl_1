@@ -34,6 +34,7 @@ void lv_port_indev_init(void)
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb = touchpad_read;
     indev_touchpad = lv_indev_drv_register(&indev_drv);
+    HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_RESET);
 }
 /*Initialize your touchpad*/
 static void touchpad_init(void)
@@ -68,6 +69,7 @@ static bool touchpad_is_pressed(void)
 
     if (tp_dev.sta & TP_PRES_DOWN)
     {
+        HAL_GPIO_TogglePin(GPIOF,GPIO_PIN_9);
         return true;
     }
     return false;

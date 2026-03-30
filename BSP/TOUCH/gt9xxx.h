@@ -30,7 +30,8 @@
 #ifndef __GT9XXX_H
 #define __GT9XXX_H
 
-#include "main.h"
+// #include "./SYSTEM/sys/sys.h"
+#include  "main.h"
 
 /******************************************************************************************/
 /* GT9XXX INT 和 RST 引脚 定义 */

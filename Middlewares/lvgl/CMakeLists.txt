@@ -23,9 +23,12 @@ set(lvgl_INC
 
 file(GLOB_RECURSE UI_SRC CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/demos/*.c" #LVGL??????????????
+#        "${CMAKE_CURRENT_SOURCE_DIR}/demo_test/*.c" #LVGL??????????????
+
 )
 
 set(UI_INC
+#    demo_test
     demos
     demos/components
     demos/fonts
