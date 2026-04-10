@@ -16,8 +16,10 @@ set(BSP_INC
     LED
     TOUCH
     SRAM
+    KEY
 )
-add_library(BSP OBJECT)
+add_library(BSP OBJECT
+)
 
 #SRC
 target_sources(BSP PUBLIC

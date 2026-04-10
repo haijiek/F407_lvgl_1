@@ -30,11 +30,14 @@
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
 #include "ui.h"
+#include  "key.h"
+#include "led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+uint16_t t;
+int flag ;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -65,6 +68,13 @@ const osThreadAttr_t touch_Task02_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
+/* Definitions for Key_Task03 */
+osThreadId_t Key_Task03Handle;
+const osThreadAttr_t Key_Task03_attributes = {
+  .name = "Key_Task03",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for lvgl_Timer01 */
 osTimerId_t lvgl_Timer01Handle;
 const osTimerAttr_t lvgl_Timer01_attributes = {
@@ -78,6 +88,7 @@ const osTimerAttr_t lvgl_Timer01_attributes = {
 
 void Start_lvgl_Task01(void *argument);
 void Start_touch_Task02(void *argument);
+void Start_Key_Task03(void *argument);
 void lvgl_Callback01(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -118,6 +129,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of touch_Task02 */
   touch_Task02Handle = osThreadNew(Start_touch_Task02, NULL, &touch_Task02_attributes);
+
+  /* creation of Key_Task03 */
+  Key_Task03Handle = osThreadNew(Start_Key_Task03, NULL, &Key_Task03_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -174,11 +188,56 @@ void Start_touch_Task02(void *argument)
   /* USER CODE END Start_touch_Task02 */
 }
 
+/* USER CODE BEGIN Header_Start_Key_Task03 */
+/**
+* @brief Function implementing the Key_Task03 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Start_Key_Task03 */
+void Start_Key_Task03(void *argument)
+{
+  /* USER CODE BEGIN Start_Key_Task03 */
+  LED_Init();
+  /* Infinite loop */
+  for(;;)
+  {
+    if (Key_GetState(KEY_0) == KEY_PRESSED)
+    {
+      LED1_Green_TOGGLE();
+    }
+    else if (Key_GetState(KEY_1) == KEY_PRESSED)
+    {
+      LED1_Green_TOGGLE();
+
+    }
+    else if (Key_GetState(KEY_2) == KEY_PRESSED)
+    {
+      LED1_Green_TOGGLE();
+    }
+    else if (Key_GetState(KEY_UP) == KEY_PRESSED)
+    {
+      LED1_Green_TOGGLE();
+      // KEY_UP �����£�ִ�������������紥���˵��������¼��ȣ�
+    }
+
+    osDelay(10);
+  }
+  /* USER CODE END Start_Key_Task03 */
+}
+
 /* lvgl_Callback01 function */
 void lvgl_Callback01(void *argument)
 {
   /* USER CODE BEGIN lvgl_Callback01 */
   lv_tick_inc(5);
+  if (t>1000) {
+    flag = flag++;
+    t = 0;
+    HAL_GPIO_TogglePin(GPIOF,GPIO_PIN_10);
+  }
+
+
   /* USER CODE END lvgl_Callback01 */
 }
 

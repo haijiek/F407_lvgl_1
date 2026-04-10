@@ -18,8 +18,8 @@ void LED_Init(void)
     HAL_GPIO_Init(LED1_GPIO_PORT, &GPIO_InitStruct);
 
     // 初始状态：关闭两个LED
-    LED0_OFF();
-    LED1_OFF();
+    LED0_Red_OFF();
+    LED1_Green_OFF();
 }
 #include "led.h"
 
