@@ -32,6 +32,8 @@
 #include "ui.h"
 #include  "key.h"
 #include "led.h"
+#include "usart.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,13 +74,18 @@ const osThreadAttr_t touch_Task02_attributes = {
 osThreadId_t Key_Task03Handle;
 const osThreadAttr_t Key_Task03_attributes = {
   .name = "Key_Task03",
-  .stack_size = 256 * 4,
+  .stack_size = 2048 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for lvgl_Timer01 */
 osTimerId_t lvgl_Timer01Handle;
 const osTimerAttr_t lvgl_Timer01_attributes = {
   .name = "lvgl_Timer01"
+};
+/* Definitions for my_Printf_Mutex01 */
+osMutexId_t my_Printf_Mutex01Handle;
+const osMutexAttr_t my_Printf_Mutex01_attributes = {
+  .name = "my_Printf_Mutex01"
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -102,6 +109,9 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
+  /* Create the mutex(es) */
+  /* creation of my_Printf_Mutex01 */
+  my_Printf_Mutex01Handle = osMutexNew(&my_Printf_Mutex01_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -199,17 +209,26 @@ void Start_Key_Task03(void *argument)
 {
   /* USER CODE BEGIN Start_Key_Task03 */
   LED_Init();
+  USART3_Init_IO();
+
   /* Infinite loop */
   for(;;)
   {
+    char GBD_buf[256];  // 足够放 "168000000" + '\0'
+    sprintf(GBD_buf, "%s\r\n", usart3_tx_handler.tx_buf);  // 或 %u
+    lv_textarea_set_text(ui_GDBText, GBD_buf);
+
     if (Key_GetState(KEY_0) == KEY_PRESSED)
     {
+      Send_AT_Command("AT");
+      lv_textarea_set_text(ui_TextArea1, (char *)usart3_tx_handler.tx_buf);
+      lv_textarea_set_text(ui_TextArea2, (char *)usart3_rx_handler.rx_buf);
+
       LED1_Green_TOGGLE();
     }
     else if (Key_GetState(KEY_1) == KEY_PRESSED)
     {
       LED1_Green_TOGGLE();
-
     }
     else if (Key_GetState(KEY_2) == KEY_PRESSED)
     {
@@ -218,7 +237,6 @@ void Start_Key_Task03(void *argument)
     else if (Key_GetState(KEY_UP) == KEY_PRESSED)
     {
       LED1_Green_TOGGLE();
-      // KEY_UP �����£�ִ�������������紥���˵��������¼��ȣ�
     }
 
     osDelay(10);
@@ -231,12 +249,6 @@ void lvgl_Callback01(void *argument)
 {
   /* USER CODE BEGIN lvgl_Callback01 */
   lv_tick_inc(5);
-  if (t>1000) {
-    flag = flag++;
-    t = 0;
-    HAL_GPIO_TogglePin(GPIOF,GPIO_PIN_10);
-  }
-
 
   /* USER CODE END lvgl_Callback01 */
 }
