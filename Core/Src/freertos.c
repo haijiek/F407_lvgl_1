@@ -74,7 +74,7 @@ const osThreadAttr_t touch_Task02_attributes = {
 osThreadId_t Key_Task03Handle;
 const osThreadAttr_t Key_Task03_attributes = {
   .name = "Key_Task03",
-  .stack_size = 2048 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for lvgl_Timer01 */
@@ -172,10 +172,10 @@ void Start_lvgl_Task01(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    uint16_t times_to_next =  lv_timer_handler();
-    if (times_to_next > 0) {
-      osDelay(times_to_next);
-    }
+
+    lv_timer_handler();
+    osDelay(5);
+
 }
   /* USER CODE END Start_lvgl_Task01 */
 }
@@ -190,9 +190,15 @@ void Start_lvgl_Task01(void *argument)
 void Start_touch_Task02(void *argument)
 {
   /* USER CODE BEGIN Start_touch_Task02 */
+  char GBD_buf[256];  // 足够放 "168000000" + '\0'
+
   /* Infinite loop */
   for(;;)
   {
+    lv_textarea_set_text(ui_TextArea1, (char *)usart3_tx_handler.tx_buf);
+    lv_textarea_set_text(ui_TextArea2, (char *)usart3_rx_handler.rx_buf);
+    lv_textarea_set_text(ui_GDBText, GBD_buf);
+
     osDelay(1);
   }
   /* USER CODE END Start_touch_Task02 */
@@ -204,6 +210,16 @@ void Start_touch_Task02(void *argument)
 * @param argument: Not used
 * @retval None
 */
+
+void Send_AT_Command(const char *cmd)
+{
+  uint16_t len = strlen(cmd);
+
+  memcpy(usart3_tx_handler.tx_buf, cmd, len);
+  usart3_tx_handler.tx_len = len;
+
+  printf("%s\r\n", cmd);
+}
 /* USER CODE END Header_Start_Key_Task03 */
 void Start_Key_Task03(void *argument)
 {
@@ -214,16 +230,8 @@ void Start_Key_Task03(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    char GBD_buf[256];  // 足够放 "168000000" + '\0'
-    sprintf(GBD_buf, "%s\r\n", usart3_tx_handler.tx_buf);  // 或 %u
-    lv_textarea_set_text(ui_GDBText, GBD_buf);
-
-    if (Key_GetState(KEY_0) == KEY_PRESSED)
-    {
+    if (Key_GetState(KEY_0) == KEY_PRESSED) {
       Send_AT_Command("AT");
-      lv_textarea_set_text(ui_TextArea1, (char *)usart3_tx_handler.tx_buf);
-      lv_textarea_set_text(ui_TextArea2, (char *)usart3_rx_handler.rx_buf);
-
       LED1_Green_TOGGLE();
     }
     else if (Key_GetState(KEY_1) == KEY_PRESSED)
@@ -238,7 +246,6 @@ void Start_Key_Task03(void *argument)
     {
       LED1_Green_TOGGLE();
     }
-
     osDelay(10);
   }
   /* USER CODE END Start_Key_Task03 */

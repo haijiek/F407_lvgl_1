@@ -32,13 +32,11 @@ extern "C" {
 #include "usart.h"
 /* USER CODE END Includes */
 
-extern UART_HandleTypeDef huart1;
-
 extern UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN Private defines */
-#define USART3_RX_BUF_SIZE 50
-#define USART3_TX_BUF_SIZE 50
+#define USART3_RX_BUF_SIZE 256
+#define USART3_TX_BUF_SIZE 256
 #define DBG(fmt, ...) Debug_Print(fmt "\r\n", ##__VA_ARGS__)
 
 
@@ -58,7 +56,6 @@ extern USART3_RxHandler_t usart3_rx_handler;
 extern USART3_TxHandler_t usart3_tx_handler;
 /* USER CODE END Private defines */
 
-void MX_USART1_UART_Init(void);
 void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
