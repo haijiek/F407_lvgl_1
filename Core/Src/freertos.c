@@ -60,8 +60,8 @@ int flag ;
 osThreadId_t lvgl_TaskHandle;
 const osThreadAttr_t lvgl_Task_attributes = {
   .name = "lvgl_Task",
-  .stack_size = 2048 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+  .stack_size = 1536 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for touch_Task02 */
 osThreadId_t touch_Task02Handle;
@@ -74,8 +74,8 @@ const osThreadAttr_t touch_Task02_attributes = {
 osThreadId_t Key_Task03Handle;
 const osThreadAttr_t Key_Task03_attributes = {
   .name = "Key_Task03",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 1024 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for lvgl_Timer01 */
 osTimerId_t lvgl_Timer01Handle;
@@ -168,15 +168,24 @@ void Start_lvgl_Task01(void *argument)
   lv_port_indev_init();
 
   ui_init();
-  osTimerStart(lvgl_Timer01Handle,5);
+  osTimerStart(lvgl_Timer01Handle, 5);  /* 5ms tick timer */
+
   /* Infinite loop */
   for(;;)
   {
+    /* lv_timer_handler() 会处理所有到期的LVGL任务
+     * 返回下一次需要调用的时间(ms)
+     * 使用osDelay让出CPU,避免阻塞其他任务
+     */
+    uint32_t time_till_next = lv_timer_handler();
 
-    lv_timer_handler();
-    osDelay(5);
+    /* 限制最小延时1ms,避免过于频繁调度 */
+    if(time_till_next < 1) time_till_next = 1;
+    /* 限制最大延时33ms,保证约30FPS的刷新率 */
+    if(time_till_next > 33) time_till_next = 33;
 
-}
+    osDelay(time_till_next);
+  }
   /* USER CODE END Start_lvgl_Task01 */
 }
 
@@ -190,16 +199,32 @@ void Start_lvgl_Task01(void *argument)
 void Start_touch_Task02(void *argument)
 {
   /* USER CODE BEGIN Start_touch_Task02 */
-  char GBD_buf[256];  // 足够放 "168000000" + '\0'
+  char GBD_buf[32] = {0};
+  char last_tx_buf[64] = {0};
+  char last_rx_buf[64] = {0};
 
-  /* Infinite loop */
+  /* Infinite loop - 更新串口数据显示到UI */
   for(;;)
   {
-    lv_textarea_set_text(ui_TextArea1, (char *)usart3_tx_handler.tx_buf);
-    lv_textarea_set_text(ui_TextArea2, (char *)usart3_rx_handler.rx_buf);
+    /* 只在数据变化时才更新UI,减少不必要的刷新 */
+    if(memcmp(last_tx_buf, usart3_tx_handler.tx_buf, sizeof(last_tx_buf)) != 0)
+    {
+      memcpy(last_tx_buf, usart3_tx_handler.tx_buf, sizeof(last_tx_buf));
+      lv_textarea_set_text(ui_SendText, (char *)usart3_tx_handler.tx_buf);
+    }
+
+    if(memcmp(last_rx_buf, usart3_rx_handler.rx_buf, sizeof(last_rx_buf)) != 0)
+    {
+      memcpy(last_rx_buf, usart3_rx_handler.rx_buf, sizeof(last_rx_buf));
+      lv_textarea_set_text(ui_ReceiText, (char *)usart3_rx_handler.rx_buf);
+    }
+
+    /* 显示系统时钟信息 */
+    snprintf(GBD_buf, sizeof(GBD_buf), "SysClk:%luMHz", HAL_RCC_GetSysClockFreq()/1000000);
     lv_textarea_set_text(ui_GDBText, GBD_buf);
 
-    osDelay(1);
+    /* 100ms刷新一次足够显示串口数据 */
+    osDelay(100);
   }
   /* USER CODE END Start_touch_Task02 */
 }
@@ -226,26 +251,71 @@ void Start_Key_Task03(void *argument)
   /* USER CODE BEGIN Start_Key_Task03 */
   LED_Init();
   USART3_Init_IO();
+  char AT_CMD_1[] = "AT";
+  char AT_CMD_2[] = "AT+CWMODE=1";
+  char AT_CMD_3[] = "AT+CWJAP=\"IQOO15\",\"12345678\"";
+  char AT_CMD_4[] = "AT+ATKCLDSTA=\"35050997308880666791\",\"12345678\"";
+
+  /* 按键消抖计数器与边沿触发标志 */
+  uint8_t key0_cnt = 0, key1_cnt = 0, key2_cnt = 0, keyup_cnt = 0;
+  uint8_t key0_trig = 0, key1_trig = 0, key2_trig = 0, keyup_trig = 0;
+
+  char buf[50];
 
   /* Infinite loop */
   for(;;)
   {
+    lv_dropdown_get_selected_str(ui_Cmd, buf, sizeof(buf));
+    /* KEY_0: 消抖 + 边沿检测，防止漏检和连发 */
     if (Key_GetState(KEY_0) == KEY_PRESSED) {
-      Send_AT_Command("AT");
-      LED1_Green_TOGGLE();
+      if (key0_cnt < 3) key0_cnt++;
+      else if (!key0_trig) {
+        key0_trig = 1;
+        Send_AT_Command(buf);
+        LED1_Green_TOGGLE();
+      }
+    } else {
+      key0_cnt = 0;
+      key0_trig = 0;
     }
-    else if (Key_GetState(KEY_1) == KEY_PRESSED)
-    {
-      LED1_Green_TOGGLE();
+
+    /* KEY_1 */
+    if (Key_GetState(KEY_1) == KEY_PRESSED) {
+      if (key1_cnt < 3) key1_cnt++;
+      else if (!key1_trig) {
+        key1_trig = 1;
+        Send_AT_Command(AT_CMD_4);
+        LED1_Green_TOGGLE();
+      }
+    } else {
+      key1_cnt = 0;
+      key1_trig = 0;
     }
-    else if (Key_GetState(KEY_2) == KEY_PRESSED)
-    {
-      LED1_Green_TOGGLE();
+
+    /* KEY_2 */
+    if (Key_GetState(KEY_2) == KEY_PRESSED) {
+      if (key2_cnt < 3) key2_cnt++;
+      else if (!key2_trig) {
+        key2_trig = 1;
+        LED1_Green_TOGGLE();
+      }
+    } else {
+      key2_cnt = 0;
+      key2_trig = 0;
     }
-    else if (Key_GetState(KEY_UP) == KEY_PRESSED)
-    {
-      LED1_Green_TOGGLE();
+
+    /* KEY_UP */
+    if (Key_GetState(KEY_UP) == KEY_PRESSED) {
+      if (keyup_cnt < 3) keyup_cnt++;
+      else if (!keyup_trig) {
+        keyup_trig = 1;
+        LED1_Green_TOGGLE();
+      }
+    } else {
+      keyup_cnt = 0;
+      keyup_trig = 0;
     }
+
     osDelay(10);
   }
   /* USER CODE END Start_Key_Task03 */

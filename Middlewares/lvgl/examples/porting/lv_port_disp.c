@@ -31,10 +31,15 @@ void lv_port_disp_init(void)
      * -----------------------*/
     disp_init();
 
-    /* Example for 1) - Use minimal buffer to fit in RAM */
+    /* 使用更大的缓冲区以提升刷新速度
+     * 建议: 至少分配1/10屏幕大小的缓冲区
+     * 800*480 / 10 = 38400 像素, 约 75KB (16bit色深)
+     * 如果内存足够,可以分配更大如: MY_DISP_HOR_RES * 100 (约150KB)
+     */
     static lv_disp_draw_buf_t draw_buf_dsc_1;
-    static lv_color_t buf_1[MY_DISP_HOR_RES * 1];                          /*A buffer for 1 row only*/
-    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 1);   /*Initialize the display buffer*/
+    static lv_color_t buf_1[MY_DISP_HOR_RES * 20] __attribute__((section(".ccmram")));  /* 20行缓冲 ~ 32KB，放入CCMRAM */
+    static lv_color_t buf_2[MY_DISP_HOR_RES * 20] __attribute__((section(".ccmram")));  /* 双缓冲 */
+    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, buf_2, MY_DISP_HOR_RES * 20);
 
     static lv_disp_drv_t disp_drv;                         /*Descriptor of a display driver*/
     lv_disp_drv_init(&disp_drv);                    /*Basic initialization*/
@@ -87,9 +92,19 @@ void lcd_draw_fast_rgb_color(int16_t sx, int16_t sy,int16_t ex, int16_t ey, uint
     uint32_t draw_size = w * h;
     lcd_write_ram_prepare();
 
-    for(uint32_t i = 0; i < draw_size; i++)
+    /* 使用 uint32_t 双字批量写入，减少一半循环次数，显著提升刷新速度 */
+    volatile uint32_t *ram32 = (volatile uint32_t *)&LCD->LCD_RAM;
+    uint32_t *p32 = (uint32_t *)color;
+    uint32_t len32 = draw_size / 2;
+
+    for(uint32_t i = 0; i < len32; i++)
     {
-        lcd_wr_data(color[i]);
+        *ram32 = p32[i];
+    }
+
+    if(draw_size & 1)  /* 奇数个像素，补写最后一个 */
+    {
+        LCD->LCD_RAM = color[draw_size - 1];
     }
 }
 

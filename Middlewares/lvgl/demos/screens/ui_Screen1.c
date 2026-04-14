@@ -8,12 +8,13 @@
 lv_obj_t * ui_Screen1 = NULL;
 lv_obj_t * ui_TabView10 = NULL;
 lv_obj_t * ui_TabPage1 = NULL;
-lv_obj_t * ui_Label1 = NULL;
-lv_obj_t * ui_Label2 = NULL;
-lv_obj_t * ui_Label3 = NULL;
+lv_obj_t * ui_Uart3TX = NULL;
+lv_obj_t * ui_Debug = NULL;
+lv_obj_t * ui_Uart3RX = NULL;
 lv_obj_t * ui_GDBText = NULL;
-lv_obj_t * ui_TextArea1 = NULL;
-lv_obj_t * ui_TextArea2 = NULL;
+lv_obj_t * ui_SendText = NULL;
+lv_obj_t * ui_ReceiText = NULL;
+lv_obj_t * ui_Cmd = NULL;
 lv_obj_t * ui_TabPage2 = NULL;
 lv_obj_t * ui_Label4 = NULL;
 lv_obj_t * ui_Label5 = NULL;
@@ -23,14 +24,6 @@ lv_obj_t * ui_TextArea4 = NULL;
 lv_obj_t * ui_TextArea5 = NULL;
 lv_obj_t * ui_TabPage3 = NULL;
 // event funtions
-void ui_event_Screen1(lv_event_t * e)
-{
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-    if(event_code == LV_EVENT_CLICKED) {
-        _ui_screen_change(&ui_Screen2, LV_SCR_LOAD_ANIM_NONE, 100, 0, &ui_Screen2_screen_init);
-    }
-}
 
 // build funtions
 
@@ -49,56 +42,66 @@ void ui_Screen1_screen_init(void)
 
     ui_TabPage1 = lv_tabview_add_tab(ui_TabView10, "Connect Control");
 
-    ui_Label1 = lv_label_create(ui_TabPage1);
-    lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label1, -317);
-    lv_obj_set_y(ui_Label1, -19);
-    lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label1, "USART3 Send");
+    ui_Uart3TX = lv_label_create(ui_TabPage1);
+    lv_obj_set_width(ui_Uart3TX, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Uart3TX, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Uart3TX, -344);
+    lv_obj_set_y(ui_Uart3TX, -76);
+    lv_obj_set_align(ui_Uart3TX, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Uart3TX, "USART3 TX");
 
-    ui_Label2 = lv_label_create(ui_TabPage1);
-    lv_obj_set_width(ui_Label2, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label2, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label2, -327);
-    lv_obj_set_y(ui_Label2, -118);
-    lv_obj_set_align(ui_Label2, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label2, "DBG");
+    ui_Debug = lv_label_create(ui_TabPage1);
+    lv_obj_set_width(ui_Debug, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Debug, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Debug, -354);
+    lv_obj_set_y(ui_Debug, -127);
+    lv_obj_set_align(ui_Debug, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Debug, "Debug\n");
 
-    ui_Label3 = lv_label_create(ui_TabPage1);
-    lv_obj_set_width(ui_Label3, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label3, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label3, -306);
-    lv_obj_set_y(ui_Label3, 44);
-    lv_obj_set_align(ui_Label3, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label3, "USART3 Receive");
+    ui_Uart3RX = lv_label_create(ui_TabPage1);
+    lv_obj_set_width(ui_Uart3RX, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Uart3RX, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Uart3RX, -342);
+    lv_obj_set_y(ui_Uart3RX, 24);
+    lv_obj_set_align(ui_Uart3RX, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Uart3RX, "USART3 RX");
 
     ui_GDBText = lv_textarea_create(ui_TabPage1);
     lv_obj_set_width(ui_GDBText, 392);
-    lv_obj_set_height(ui_GDBText, 70);
-    lv_obj_set_x(ui_GDBText, -36);
-    lv_obj_set_y(ui_GDBText, -118);
+    lv_obj_set_height(ui_GDBText, 64);
+    lv_obj_set_x(ui_GDBText, -90);
+    lv_obj_set_y(ui_GDBText, -140);
     lv_obj_set_align(ui_GDBText, LV_ALIGN_CENTER);
     lv_textarea_set_text(ui_GDBText, "GDB");
     lv_textarea_set_placeholder_text(ui_GDBText, "Placeholder...");
 
-    ui_TextArea1 = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_TextArea1, 397);
-    lv_obj_set_height(ui_TextArea1, 42);
-    lv_obj_set_x(ui_TextArea1, -26);
-    lv_obj_set_y(ui_TextArea1, -24);
-    lv_obj_set_align(ui_TextArea1, LV_ALIGN_CENTER);
-    lv_textarea_set_text(ui_TextArea1, "hello");
-    lv_textarea_set_placeholder_text(ui_TextArea1, "Placeholder...");
+    ui_SendText = lv_textarea_create(ui_TabPage1);
+    lv_obj_set_width(ui_SendText, 397);
+    lv_obj_set_height(ui_SendText, 88);
+    lv_obj_set_x(ui_SendText, -87);
+    lv_obj_set_y(ui_SendText, -53);
+    lv_obj_set_align(ui_SendText, LV_ALIGN_CENTER);
+    lv_textarea_set_text(ui_SendText, "hello");
+    lv_textarea_set_placeholder_text(ui_SendText, "Placeholder...");
 
-    ui_TextArea2 = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_TextArea2, 396);
-    lv_obj_set_height(ui_TextArea2, 42);
-    lv_obj_set_x(ui_TextArea2, -26);
-    lv_obj_set_y(ui_TextArea2, 35);
-    lv_obj_set_align(ui_TextArea2, LV_ALIGN_CENTER);
-    lv_textarea_set_text(ui_TextArea2, "hello1");
-    lv_textarea_set_placeholder_text(ui_TextArea2, "Placeholder...");
+    ui_ReceiText = lv_textarea_create(ui_TabPage1);
+    lv_obj_set_width(ui_ReceiText, 396);
+    lv_obj_set_height(ui_ReceiText, 162);
+    lv_obj_set_x(ui_ReceiText, -84);
+    lv_obj_set_y(ui_ReceiText, 95);
+    lv_obj_set_align(ui_ReceiText, LV_ALIGN_CENTER);
+    lv_textarea_set_text(ui_ReceiText, "hello1");
+    lv_textarea_set_placeholder_text(ui_ReceiText, "Placeholder...");
+
+    ui_Cmd = lv_dropdown_create(ui_TabPage1);
+    lv_dropdown_set_options(ui_Cmd,
+                            "AT\nAT+CWMODE=1\nAT+CWJAP=\"IQOO15\",\"12345678\"\nAT+ATKCLDSTA=\"35050997308880666791\",\"12345678\"\n");
+    lv_obj_set_width(ui_Cmd, 265);
+    lv_obj_set_height(ui_Cmd, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Cmd, 252);
+    lv_obj_set_y(ui_Cmd, -138);
+    lv_obj_set_align(ui_Cmd, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Cmd, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
 
     ui_TabPage2 = lv_tabview_add_tab(ui_TabView10, "Parameter");
 
@@ -152,8 +155,6 @@ void ui_Screen1_screen_init(void)
 
     ui_TabPage3 = lv_tabview_add_tab(ui_TabView10, "Adjust Control");
 
-    lv_obj_add_event_cb(ui_Screen1, ui_event_Screen1, LV_EVENT_ALL, NULL);
-
 }
 
 void ui_Screen1_screen_destroy(void)
@@ -164,12 +165,13 @@ void ui_Screen1_screen_destroy(void)
     ui_Screen1 = NULL;
     ui_TabView10 = NULL;
     ui_TabPage1 = NULL;
-    ui_Label1 = NULL;
-    ui_Label2 = NULL;
-    ui_Label3 = NULL;
+    ui_Uart3TX = NULL;
+    ui_Debug = NULL;
+    ui_Uart3RX = NULL;
     ui_GDBText = NULL;
-    ui_TextArea1 = NULL;
-    ui_TextArea2 = NULL;
+    ui_SendText = NULL;
+    ui_ReceiText = NULL;
+    ui_Cmd = NULL;
     ui_TabPage2 = NULL;
     ui_Label4 = NULL;
     ui_Label5 = NULL;

@@ -123,7 +123,22 @@ target_link_libraries(ui PUBLIC lvgl)
 ### 进展
 1.解决了乱码问题，就是晶振不匹配，导致波特率不匹配，乱码了
 
-
+时间：2026/4/14
+### 目标
+1.
+### 问题
+1.
+### 进展
+```c++
+解决了有下拉列表来灵活发送指令，这里面有个细节，下拉列表是一个字符串，用lv_dropdown_get_selected_str(ui_Cmd, buf, sizeof(buf));
+用这个函数转移字符串，不用在刻意加转义字符
+lv_dropdown_set_options(ui_Cmd,
+                        "AT\n"
+                        "AT+CWMODE=1\n"
+                        "AT+CWJAP=\"IQOO15\",\"12345678\"\n"
+                        "AT+ATKCLDSTA=\"35050997308880666791\",\"12345678\"\n");
+其实是这里面已经存在了转移字符，在SquareLine设计下拉列表UI的时候，软件就已经把下拉选项的字符化了（加上转义字符了）
+```
 
 
 

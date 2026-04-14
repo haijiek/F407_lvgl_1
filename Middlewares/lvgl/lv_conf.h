@@ -77,11 +77,15 @@
    HAL SETTINGS
  *====================*/
 
-/*Default display refresh period. LVG will redraw changed areas with this period time*/
-#define LV_DISP_DEF_REFR_PERIOD 30      /*[ms]*/
+/*Default display refresh period. LVG will redraw changed areas with this period time
+ * 降低刷新周期到16ms,实现约60FPS流畅度
+ */
+#define LV_DISP_DEF_REFR_PERIOD 16      /*[ms]*/
 
-/*Input device read period in milliseconds*/
-#define LV_INDEV_DEF_READ_PERIOD 30     /*[ms]*/
+/*Input device read period in milliseconds
+ * 降低输入设备读取周期,提升触摸响应速度
+ */
+#define LV_INDEV_DEF_READ_PERIOD 16     /*[ms]*/
 
 /*Use a custom tick source that tells the elapsed time in milliseconds.
  *It removes the need to manually update the tick with `lv_tick_inc()`)*/

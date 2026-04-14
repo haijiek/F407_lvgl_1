@@ -13,16 +13,16 @@ extern "C" {
 // SCREEN: ui_Screen1
 extern void ui_Screen1_screen_init(void);
 extern void ui_Screen1_screen_destroy(void);
-extern void ui_event_Screen1(lv_event_t * e);
 extern lv_obj_t * ui_Screen1;
 extern lv_obj_t * ui_TabView10;
 extern lv_obj_t * ui_TabPage1;
-extern lv_obj_t * ui_Label1;
-extern lv_obj_t * ui_Label2;
-extern lv_obj_t * ui_Label3;
+extern lv_obj_t * ui_Uart3TX;
+extern lv_obj_t * ui_Debug;
+extern lv_obj_t * ui_Uart3RX;
 extern lv_obj_t * ui_GDBText;
-extern lv_obj_t * ui_TextArea1;
-extern lv_obj_t * ui_TextArea2;
+extern lv_obj_t * ui_SendText;
+extern lv_obj_t * ui_ReceiText;
+extern lv_obj_t * ui_Cmd;
 extern lv_obj_t * ui_TabPage2;
 extern lv_obj_t * ui_Label4;
 extern lv_obj_t * ui_Label5;

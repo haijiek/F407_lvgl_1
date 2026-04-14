@@ -80,6 +80,12 @@ static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
     /*Your code comes here*/
     (*x) = tp_dev.x[0];
     (*y) = tp_dev.y[0];
+
+    /* 坐标边界保护，防止超出屏幕范围导致 LVGL 行为异常 (屏幕分辨率 800x480) */
+    // if (*x >= 800) *x = 799;
+    // if (*y >= 480) *y = 479;
+
+    // printf("Touch: x=%d, y=%d\r\n", (int)(*x), (int)(*y));
 }
 #else /*Enable this file at the top*/
 /*This dummy typedef exists purely to silence -Wpedantic.*/
