@@ -139,7 +139,10 @@ lv_dropdown_set_options(ui_Cmd,
                         "AT+ATKCLDSTA=\"35050997308880666791\",\"12345678\"\n");
 其实是这里面已经存在了转移字符，在SquareLine设计下拉列表UI的时候，软件就已经把下拉选项的字符化了（加上转义字符了）
 ```
-
+下拉列表 通过lv_dropdown_get_selected_str(ui_Cmd, usart3_tx_handler.tx_buf, sizeof(usart3_tx_handler.tx_buf))传递给发送缓冲区;
+发送缓冲区 通过lv_textarea_set_text(ui_SendText, (char *)usart3_tx_handler.tx_buf);显示在Textarea
+Textarea 通过const char * text = lv_textarea_get_text(ui_SendText);将数据传递给指针
+printf   通过printf("Content: %s\n", text);就是可以使用了
 
 
 
