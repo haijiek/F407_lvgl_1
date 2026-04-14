@@ -15,6 +15,7 @@ lv_obj_t * ui_GDBText = NULL;
 lv_obj_t * ui_SendText = NULL;
 lv_obj_t * ui_ReceiText = NULL;
 lv_obj_t * ui_Cmd = NULL;
+lv_obj_t * ui_Keyboard1 = NULL;
 lv_obj_t * ui_TabPage2 = NULL;
 lv_obj_t * ui_Label4 = NULL;
 lv_obj_t * ui_Label5 = NULL;
@@ -24,6 +25,15 @@ lv_obj_t * ui_TextArea4 = NULL;
 lv_obj_t * ui_TextArea5 = NULL;
 lv_obj_t * ui_TabPage3 = NULL;
 // event funtions
+void ui_event_SendText(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_flag_modify(ui_Keyboard1, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_TOGGLE);
+        _ui_keyboard_set_target(ui_Keyboard1,  ui_SendText);
+    }
+}
 
 // build funtions
 
@@ -38,7 +48,8 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_x(ui_TabView10, 2);
     lv_obj_set_y(ui_TabView10, 1);
     lv_obj_set_align(ui_TabView10, LV_ALIGN_CENTER);
-    lv_obj_clear_flag(ui_TabView10, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_clear_flag(ui_TabView10, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
+                      LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE);     /// Flags
 
     ui_TabPage1 = lv_tabview_add_tab(ui_TabView10, "Connect Control");
 
@@ -67,41 +78,49 @@ void ui_Screen1_screen_init(void)
     lv_label_set_text(ui_Uart3RX, "USART3 RX");
 
     ui_GDBText = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_GDBText, 392);
+    lv_obj_set_width(ui_GDBText, 276);
     lv_obj_set_height(ui_GDBText, 64);
-    lv_obj_set_x(ui_GDBText, -90);
+    lv_obj_set_x(ui_GDBText, -138);
     lv_obj_set_y(ui_GDBText, -140);
     lv_obj_set_align(ui_GDBText, LV_ALIGN_CENTER);
     lv_textarea_set_text(ui_GDBText, "GDB");
     lv_textarea_set_placeholder_text(ui_GDBText, "Placeholder...");
 
     ui_SendText = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_SendText, 397);
+    lv_obj_set_width(ui_SendText, 296);
     lv_obj_set_height(ui_SendText, 88);
-    lv_obj_set_x(ui_SendText, -87);
-    lv_obj_set_y(ui_SendText, -53);
+    lv_obj_set_x(ui_SendText, -132);
+    lv_obj_set_y(ui_SendText, -49);
     lv_obj_set_align(ui_SendText, LV_ALIGN_CENTER);
     lv_textarea_set_text(ui_SendText, "hello");
     lv_textarea_set_placeholder_text(ui_SendText, "Placeholder...");
 
     ui_ReceiText = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_ReceiText, 396);
+    lv_obj_set_width(ui_ReceiText, 299);
     lv_obj_set_height(ui_ReceiText, 162);
-    lv_obj_set_x(ui_ReceiText, -84);
-    lv_obj_set_y(ui_ReceiText, 95);
+    lv_obj_set_x(ui_ReceiText, -132);
+    lv_obj_set_y(ui_ReceiText, 99);
     lv_obj_set_align(ui_ReceiText, LV_ALIGN_CENTER);
     lv_textarea_set_text(ui_ReceiText, "hello1");
     lv_textarea_set_placeholder_text(ui_ReceiText, "Placeholder...");
 
     ui_Cmd = lv_dropdown_create(ui_TabPage1);
     lv_dropdown_set_options(ui_Cmd,
-                            "AT\nAT+CWMODE=1\nAT+CWJAP=\"IQOO15\",\"12345678\"\nAT+ATKCLDSTA=\"35050997308880666791\",\"12345678\"\n");
-    lv_obj_set_width(ui_Cmd, 265);
+                            "AT\nAT+RST\n AT+CWLIF\nAT+CWMODE=1\nAT+CWJAP=\"IQOO15\",\"12345678\"\nAT+ATKCLDSTA=\"35050997308880666791\",\"12345678\"\n\n");
+    lv_obj_set_width(ui_Cmd, 337);
     lv_obj_set_height(ui_Cmd, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Cmd, 252);
-    lv_obj_set_y(ui_Cmd, -138);
+    lv_obj_set_x(ui_Cmd, 189);
+    lv_obj_set_y(ui_Cmd, -146);
     lv_obj_set_align(ui_Cmd, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Cmd, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+
+    ui_Keyboard1 = lv_keyboard_create(ui_TabPage1);
+    lv_obj_set_width(ui_Keyboard1, 553);
+    lv_obj_set_height(ui_Keyboard1, 246);
+    lv_obj_set_x(ui_Keyboard1, 86);
+    lv_obj_set_y(ui_Keyboard1, 72);
+    lv_obj_set_align(ui_Keyboard1, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Keyboard1, LV_OBJ_FLAG_HIDDEN);     /// Flags
 
     ui_TabPage2 = lv_tabview_add_tab(ui_TabView10, "Parameter");
 
@@ -155,6 +174,9 @@ void ui_Screen1_screen_init(void)
 
     ui_TabPage3 = lv_tabview_add_tab(ui_TabView10, "Adjust Control");
 
+    lv_obj_add_event_cb(ui_SendText, ui_event_SendText, LV_EVENT_ALL, NULL);
+    lv_keyboard_set_textarea(ui_Keyboard1, ui_SendText);
+
 }
 
 void ui_Screen1_screen_destroy(void)
@@ -172,6 +194,7 @@ void ui_Screen1_screen_destroy(void)
     ui_SendText = NULL;
     ui_ReceiText = NULL;
     ui_Cmd = NULL;
+    ui_Keyboard1 = NULL;
     ui_TabPage2 = NULL;
     ui_Label4 = NULL;
     ui_Label5 = NULL;

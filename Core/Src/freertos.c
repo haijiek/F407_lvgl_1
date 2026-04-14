@@ -240,8 +240,8 @@ void Send_AT_Command(const char *cmd)
 {
   uint16_t len = strlen(cmd);
 
-  memcpy(usart3_tx_handler.tx_buf, cmd, len);
-  usart3_tx_handler.tx_len = len;
+  // memcpy(usart3_tx_handler.tx_buf, cmd, len);//cmd字符复制到usart3_tx_handler.tx_buf里面
+  // usart3_tx_handler.tx_len = len;            //发送命令的长度
 
   printf("%s\r\n", cmd);
 }
@@ -265,13 +265,14 @@ void Start_Key_Task03(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    lv_dropdown_get_selected_str(ui_Cmd, buf, sizeof(buf));
+    lv_dropdown_get_selected_str(ui_Cmd, usart3_tx_handler.tx_buf, sizeof(usart3_tx_handler.tx_buf));
+    const char * text = lv_textarea_get_text(ui_SendText);
     /* KEY_0: 消抖 + 边沿检测，防止漏检和连发 */
     if (Key_GetState(KEY_0) == KEY_PRESSED) {
       if (key0_cnt < 3) key0_cnt++;
       else if (!key0_trig) {
         key0_trig = 1;
-        Send_AT_Command(buf);
+        Send_AT_Command(text);
         LED1_Green_TOGGLE();
       }
     } else {
