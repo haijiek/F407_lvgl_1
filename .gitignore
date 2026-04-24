@@ -1,0 +1,67 @@
+# ==========================================
+# STM32F407 + LVGL 工程优化 .gitignore
+# 工具链: CMake + Ninja / CLion / Keil MDK
+# ==========================================
+
+# ---------- 通用系统文件 ----------
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.bak
+
+# ---------- CMake / Ninja 构建输出 ----------
+# CMakePresets.json 定义构建目录为 build/${presetName}
+build/
+cmake-build-*/
+
+# CMake 生成文件
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+build.ninja
+.ninja_deps
+.ninja_log
+Makefile
+
+# 固件编译产物 (根目录或分散路径)
+*.elf
+*.map
+*.bin
+*.hex
+*.lst
+*.axf
+
+# ---------- CLion / JetBrains IDE ----------
+# 保留: .idea/modules.xml, .idea/vcs.xml, .idea/*.iml 等共享配置
+# 忽略: 用户本地特定文件
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/shelf/
+.idea/**/dictionaries/
+.idea/**/dataSources/
+.idea/**/dataSources.local.xml
+.idea/**/httpRequests/
+.idea/**/queries/
+
+# ---------- Keil MDK (MDK-ARM/) ----------
+# 保留: *.uvprojx (项目文件), startup_*.s (启动文件)
+# 忽略: 用户特定配置
+MDK-ARM/*.uvoptx
+MDK-ARM/*.uvguix.*
+MDK-ARM/*.lst
+
+# 忽略: Keil 自动生成/编译输出目录
+MDK-ARM/DebugConfig/
+MDK-ARM/RTE/
+MDK-ARM/F407_lvgl_1/
+
+# 若 RTE 中有手工修改的组件配置需保留，可取消注释下面两行:
+# !MDK-ARM/RTE/
+# !MDK-ARM/RTE/**/*.config
+
+# ---------- 图像/文档临时文件 ----------
+~$*
