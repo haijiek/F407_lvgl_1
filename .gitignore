@@ -16,9 +16,9 @@ Thumbs.db
 build/
 cmake-build-*/
 
-# CMake 生成文件
+# CMake 生成文件（** 匹配所有子目录，防止产物散落在源码树中）
+**/CMakeFiles/
 CMakeCache.txt
-CMakeFiles/
 cmake_install.cmake
 compile_commands.json
 build.ninja
@@ -33,6 +33,7 @@ Makefile
 *.hex
 *.lst
 *.axf
+**/*.obj
 
 # ---------- CLion / JetBrains IDE ----------
 # 保留: .idea/modules.xml, .idea/vcs.xml, .idea/*.iml 等共享配置
@@ -58,6 +59,14 @@ MDK-ARM/*.lst
 MDK-ARM/DebugConfig/
 MDK-ARM/RTE/
 MDK-ARM/F407_lvgl_1/
+
+# Keil 编译产物后缀（双重保险）
+MDK-ARM/**/*.crf
+MDK-ARM/**/*.dep
+MDK-ARM/**/*.htm
+MDK-ARM/**/*.sct
+MDK-ARM/**/*.d
+MDK-ARM/**/*.o
 
 # 若 RTE 中有手工修改的组件配置需保留，可取消注释下面两行:
 # !MDK-ARM/RTE/
