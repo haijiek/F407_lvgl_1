@@ -83,27 +83,38 @@ void disp_disable_update(void)
     disp_flush_enabled = false;
 }
 
-void lcd_draw_fast_rgb_color(int16_t sx, int16_t sy,int16_t ex, int16_t ey, uint16_t *color)
+__attribute__((always_inline, optimize("O3")))
+void lcd_draw_fast_rgb_color(int16_t sx, int16_t sy, int16_t ex, int16_t ey, uint16_t *color)
 {
-    uint16_t w = ex-sx+1;
-    uint16_t h = ey-sy+1;
-
+    uint16_t w = ex - sx + 1;
+    uint16_t h = ey - sy + 1;
     lcd_set_window(sx, sy, w, h);
-    uint32_t draw_size = w * h;
     lcd_write_ram_prepare();
 
-    /* 使用 uint32_t 双字批量写入，减少一半循环次数，显著提升刷新速度 */
+    uint32_t draw_size = w * h;
     volatile uint32_t *ram32 = (volatile uint32_t *)&LCD->LCD_RAM;
     uint32_t *p32 = (uint32_t *)color;
     uint32_t len32 = draw_size / 2;
+    uint32_t i = 0;
 
-    for(uint32_t i = 0; i < len32; i++)
-    {
+    /* 展开 8 次：一次处理 16 个像素（8 个 32bit 字） */
+    while (i + 7 < len32) {
+        *ram32 = p32[i];
+        *ram32 = p32[i+1];
+        *ram32 = p32[i+2];
+        *ram32 = p32[i+3];
+        *ram32 = p32[i+4];
+        *ram32 = p32[i+5];
+        *ram32 = p32[i+6];
+        *ram32 = p32[i+7];
+        i += 8;
+    }
+    /* 收尾 */
+    for (; i < len32; i++) {
         *ram32 = p32[i];
     }
 
-    if(draw_size & 1)  /* 奇数个像素，补写最后一个 */
-    {
+    if (draw_size & 1) {
         LCD->LCD_RAM = color[draw_size - 1];
     }
 }
