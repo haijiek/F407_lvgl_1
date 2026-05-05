@@ -85,7 +85,8 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
     lvgl
-#    BSP
+    ui
+    BSP
     # Add user defined libraries
 )
 

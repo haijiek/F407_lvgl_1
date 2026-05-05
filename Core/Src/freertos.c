@@ -34,6 +34,10 @@
 #include "led.h"
 #include "usart.h"
 #include "stdio.h"
+#include "ui_events.h"
+#include "ui_custom.h"
+#include "dht11.h"
+#include "adc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +48,7 @@ int flag ;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define WIFI_SCAN_TIMEOUT 8000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,14 +58,14 @@ int flag ;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+/* WiFi variables moved to wifi_control.c */
 /* USER CODE END Variables */
 /* Definitions for lvgl_Task */
 osThreadId_t lvgl_TaskHandle;
 const osThreadAttr_t lvgl_Task_attributes = {
   .name = "lvgl_Task",
-  .stack_size = 1536 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 2048 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for touch_Task02 */
 osThreadId_t touch_Task02Handle;
@@ -75,7 +79,14 @@ osThreadId_t Key_Task03Handle;
 const osThreadAttr_t Key_Task03_attributes = {
   .name = "Key_Task03",
   .stack_size = 1024 * 4,
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for Senor_Task04 */
+osThreadId_t Senor_Task04Handle;
+const osThreadAttr_t Senor_Task04_attributes = {
+  .name = "Senor_Task04",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for lvgl_Timer01 */
 osTimerId_t lvgl_Timer01Handle;
@@ -96,6 +107,7 @@ const osMutexAttr_t my_Printf_Mutex01_attributes = {
 void Start_lvgl_Task01(void *argument);
 void Start_touch_Task02(void *argument);
 void Start_Key_Task03(void *argument);
+void Start_Senor_Task04(void *argument);
 void lvgl_Callback01(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -143,6 +155,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of Key_Task03 */
   Key_Task03Handle = osThreadNew(Start_Key_Task03, NULL, &Key_Task03_attributes);
 
+  /* creation of Senor_Task04 */
+  Senor_Task04Handle = osThreadNew(Start_Senor_Task04, NULL, &Senor_Task04_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -179,6 +194,9 @@ void Start_lvgl_Task01(void *argument)
      */
     uint32_t time_till_next = lv_timer_handler();
 
+    /* 将 Key_Task 中标记的 UI 更新应用到屏幕（必须在 LVGL 任务中执行） */
+    apply_ui_updates();
+
     /* 限制最小延时1ms,避免过于频繁调度 */
     if(time_till_next < 1) time_till_next = 1;
     /* 限制最大延时33ms,保证约30FPS的刷新率 */
@@ -207,21 +225,6 @@ void Start_touch_Task02(void *argument)
   for(;;)
   {
     /* 只在数据变化时才更新UI,减少不必要的刷新 */
-    if(memcmp(last_tx_buf, usart3_tx_handler.tx_buf, sizeof(last_tx_buf)) != 0)
-    {
-      memcpy(last_tx_buf, usart3_tx_handler.tx_buf, sizeof(last_tx_buf));
-      lv_textarea_set_text(ui_SendText, (char *)usart3_tx_handler.tx_buf);
-    }
-
-    if(memcmp(last_rx_buf, usart3_rx_handler.rx_buf, sizeof(last_rx_buf)) != 0)
-    {
-      memcpy(last_rx_buf, usart3_rx_handler.rx_buf, sizeof(last_rx_buf));
-      lv_textarea_set_text(ui_ReceiText, (char *)usart3_rx_handler.rx_buf);
-    }
-
-    /* 显示系统时钟信息 */
-    snprintf(GBD_buf, sizeof(GBD_buf), "SysClk:%luMHz", HAL_RCC_GetSysClockFreq()/1000000);
-    lv_textarea_set_text(ui_GDBText, GBD_buf);
 
     /* 100ms刷新一次足够显示串口数据 */
     osDelay(100);
@@ -236,14 +239,10 @@ void Start_touch_Task02(void *argument)
 * @retval None
 */
 
+/* WiFi functions moved to wifi_control.c */
 void Send_AT_Command(const char *cmd)
 {
-  uint16_t len = strlen(cmd);
-
-  // memcpy(usart3_tx_handler.tx_buf, cmd, len);//cmd字符复制到usart3_tx_handler.tx_buf里面
-  // usart3_tx_handler.tx_len = len;            //发送命令的长度
-
-  printf("%s\r\n", cmd);
+    printf("%s\r\n", cmd);
 }
 /* USER CODE END Header_Start_Key_Task03 */
 void Start_Key_Task03(void *argument)
@@ -251,28 +250,54 @@ void Start_Key_Task03(void *argument)
   /* USER CODE BEGIN Start_Key_Task03 */
   LED_Init();
   USART3_Init_IO();
-  char AT_CMD_1[] = "AT";
-  char AT_CMD_2[] = "AT+CWMODE=1";
-  char AT_CMD_3[] = "AT+CWJAP=\"IQOO15\",\"12345678\"";
-  char AT_CMD_4[] = "AT+ATKCLDSTA=\"35050997308880666791\",\"12345678\"";
 
-  /* 按键消抖计数器与边沿触发标志 */
-  uint8_t key0_cnt = 0, key1_cnt = 0, key2_cnt = 0, keyup_cnt = 0;
-  uint8_t key0_trig = 0, key1_trig = 0, key2_trig = 0, keyup_trig = 0;
+  uint8_t key0_cnt = 0, key0_trig = 0;
+  uint8_t key1_cnt = 0, key1_trig = 0;
+  uint8_t key2_cnt = 0, key2_trig = 0;
 
-  char buf[50];
+  // 上电自动扫描：等待 ESP-01 启动完成（2秒）
+  osDelay(2000);
+  update_wifi_status("Disconnected");
+  wifi_scan_start();
 
-  /* Infinite loop */
   for(;;)
   {
-    lv_dropdown_get_selected_str(ui_Cmd, usart3_tx_handler.tx_buf, sizeof(usart3_tx_handler.tx_buf));
-    const char * text = lv_textarea_get_text(ui_SendText);
-    /* KEY_0: 消抖 + 边沿检测，防止漏检和连发 */
-    if (Key_GetState(KEY_0) == KEY_PRESSED) {
-      if (key0_cnt < 3) key0_cnt++;
-      else if (!key0_trig) {
+    // 统一处理串口接收帧（只消费一次 frame_ready）
+    if(usart3_rx_handler.frame_ready) {
+      usart3_rx_handler.frame_ready = 0;
+      char *rx = (char*)usart3_rx_handler.rx_buf;
+
+      // 1. 如果在扫描期间，尝试解析 WiFi 列表
+      if(is_wifi_scanning()) {
+        parse_wifi_list(rx);
+      }
+
+      // 2. 无论是否在扫描，都检查 WiFi 状态响应
+      if(strstr(rx, "STATUS:CONNECTED")) {
+        update_wifi_status("Connected");
+      }
+      else if(strstr(rx, "STATUS:FAILED")) {
+        update_wifi_status("Password Error");
+      }
+      else if(strstr(rx, "STATUS:CONNECTING")) {
+        update_wifi_status("Connecting...");
+      }
+      else if(strstr(rx, "STATUS:DISCONNECTED")) {
+        update_wifi_status("Disconnected");
+      }
+    }
+
+    // 扫描超时处理
+    if(is_wifi_scanning() && (osKernelGetTickCount() - get_wifi_scan_start_time()) > WIFI_SCAN_TIMEOUT) {
+      clear_wifi_scanning();
+    }
+
+    // KEY_0: 手动刷新 WiFi 列表
+    if(Key_GetState(KEY_0) == KEY_PRESSED) {
+      if(key0_cnt < 3) key0_cnt++;
+      else if(!key0_trig) {
         key0_trig = 1;
-        Send_AT_Command(text);
+        wifi_scan_start();
         LED1_Green_TOGGLE();
       }
     } else {
@@ -280,46 +305,84 @@ void Start_Key_Task03(void *argument)
       key0_trig = 0;
     }
 
-    /* KEY_1 */
-    if (Key_GetState(KEY_1) == KEY_PRESSED) {
-      if (key1_cnt < 3) key1_cnt++;
-      else if (!key1_trig) {
+    // KEY_1: 连接 WiFi
+    if(Key_GetState(KEY_1) == KEY_PRESSED) {
+      if(key1_cnt < 3) key1_cnt++;
+      else if(!key1_trig) {
         key1_trig = 1;
-        Send_AT_Command(AT_CMD_4);
-        LED1_Green_TOGGLE();
+        do_wifi_connect(NULL);
       }
     } else {
       key1_cnt = 0;
       key1_trig = 0;
     }
 
-    /* KEY_2 */
-    if (Key_GetState(KEY_2) == KEY_PRESSED) {
-      if (key2_cnt < 3) key2_cnt++;
-      else if (!key2_trig) {
+    // KEY_2: 断开 WiFi
+    if(Key_GetState(KEY_2) == KEY_PRESSED) {
+      if(key2_cnt < 3) key2_cnt++;
+      else if(!key2_trig) {
         key2_trig = 1;
-        LED1_Green_TOGGLE();
+        do_wifi_disconnect(NULL);
       }
     } else {
       key2_cnt = 0;
       key2_trig = 0;
     }
 
-    /* KEY_UP */
-    if (Key_GetState(KEY_UP) == KEY_PRESSED) {
-      if (keyup_cnt < 3) keyup_cnt++;
-      else if (!keyup_trig) {
-        keyup_trig = 1;
-        LED1_Green_TOGGLE();
-      }
-    } else {
-      keyup_cnt = 0;
-      keyup_trig = 0;
+    // 每 3 秒轮询一次 WiFi 状态
+    static uint32_t last_status_query = 0;
+    if(osKernelGetTickCount() - last_status_query > 3000) {
+      last_status_query = osKernelGetTickCount();
+      Send_AT_Command("WIFI_STATUS\n");
     }
 
     osDelay(10);
   }
   /* USER CODE END Start_Key_Task03 */
+}
+
+/* USER CODE BEGIN Header_Start_Senor_Task04 */
+/**
+* @brief Function implementing the Senor_Task04 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Start_Senor_Task04 */
+void Start_Senor_Task04(void *argument)
+{
+  /* USER CODE BEGIN Start_Senor_Task04 */
+    DHT11_Init();
+
+    float temperature = 0.0f;
+    float humidity = 0.0f;
+    uint16_t light_raw = 0;
+
+    /* Infinite loop */
+    for(;;)
+    {
+        uint8_t dht11_ok = 1;
+
+        vTaskSuspendAll();
+        if(DHT11_Read_Data(&temperature, &humidity) != 0) {
+            dht11_ok = 0;
+        }
+        xTaskResumeAll();
+
+        uint32_t adc_sum = 0;
+        for(int i = 0; i < 10; i++) {
+            HAL_ADC_Start(&hadc3);
+            if(HAL_ADC_PollForConversion(&hadc3, 10) == HAL_OK) {
+                adc_sum += HAL_ADC_GetValue(&hadc3);
+            }
+            HAL_ADC_Stop(&hadc3);
+        }
+        light_raw = (uint16_t)(adc_sum / 10);
+
+        update_sensor_display(temperature, humidity, light_raw);
+
+        osDelay(2000);
+    }
+  /* USER CODE END Start_Senor_Task04 */
 }
 
 /* lvgl_Callback01 function */

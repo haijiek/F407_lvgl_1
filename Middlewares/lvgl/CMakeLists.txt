@@ -54,6 +54,7 @@ target_sources(lvgl PRIVATE
 )
 target_sources(ui PRIVATE
         ${UI_SRC}
+        ${CMAKE_CURRENT_SOURCE_DIR}/ui_custom.c
 )
 #----------target_include---------
 
@@ -70,7 +71,6 @@ target_include_directories(ui PUBLIC
 target_link_libraries(lvgl PUBLIC
     stm32cubemx
     BSP
-    ui
 )
 target_link_libraries(ui PUBLIC lvgl)
 

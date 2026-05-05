@@ -11,17 +11,12 @@ void delay_ms(uint32_t ms) {
 }
 
 void delay_us(uint32_t us) {
-    uint32_t start, current, elapsed;
-    uint32_t ticks = us * (SystemCoreClock / 1000000);
-
-    start = SysTick->VAL;
-
-    do {
-        current = SysTick->VAL;
-        if (current > start) {
-            elapsed = (start + (SysTick->LOAD + 1) - current);
-        } else {
-            elapsed = start - current;
-        }
-    } while (elapsed < ticks);
+    if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+        DWT->CYCCNT = 0;
+        DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    }
+    uint32_t start = DWT->CYCCNT;
+    uint32_t ticks = us * (HAL_RCC_GetSysClockFreq() / 1000000);
+    while ((DWT->CYCCNT - start) < ticks);
 }

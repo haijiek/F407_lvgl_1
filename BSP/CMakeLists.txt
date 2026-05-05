@@ -6,19 +6,19 @@
 # one task don't affect another task.
 
 file(GLOB_RECURSE BSP_SRC CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/*.c" #BSPÏÂÃæµÄËùÓÐÔ´ÎÄ¼þ
+        "${CMAKE_CURRENT_SOURCE_DIR}/*.c" #BSPï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½Ä¼ï¿½
 )
 
 set(BSP_INC
-    24CXX
     delay
     LCD
     LED
     TOUCH
     SRAM
     KEY
+    DHT11
 )
-add_library(BSP OBJECT
+add_library(BSP STATIC
 )
 
 #SRC

@@ -8,30 +8,51 @@
 lv_obj_t * ui_Screen1 = NULL;
 lv_obj_t * ui_TabView10 = NULL;
 lv_obj_t * ui_TabPage1 = NULL;
-lv_obj_t * ui_Uart3TX = NULL;
 lv_obj_t * ui_Debug = NULL;
-lv_obj_t * ui_Uart3RX = NULL;
-lv_obj_t * ui_GDBText = NULL;
-lv_obj_t * ui_SendText = NULL;
-lv_obj_t * ui_ReceiText = NULL;
+lv_obj_t * ui_Wifi_Status = NULL;
+lv_obj_t * ui_PasswordText = NULL;
+lv_obj_t * ui_Wifi_List = NULL;
+lv_obj_t * ui_Connect1 = NULL;
+lv_obj_t * ui_Connect = NULL;
 lv_obj_t * ui_Cmd = NULL;
 lv_obj_t * ui_Keyboard1 = NULL;
+lv_obj_t * ui_Wifi_state = NULL;
+lv_obj_t * ui_disconnect = NULL;
+lv_obj_t * ui_Label7 = NULL;
 lv_obj_t * ui_TabPage2 = NULL;
 lv_obj_t * ui_Label4 = NULL;
 lv_obj_t * ui_Label5 = NULL;
 lv_obj_t * ui_Label6 = NULL;
-lv_obj_t * ui_TextArea3 = NULL;
-lv_obj_t * ui_TextArea4 = NULL;
-lv_obj_t * ui_TextArea5 = NULL;
+lv_obj_t * ui_TemperatureText = NULL;
+lv_obj_t * ui_HumidityText = NULL;
+lv_obj_t * ui_LightText = NULL;
 lv_obj_t * ui_TabPage3 = NULL;
 // event funtions
-void ui_event_SendText(lv_event_t * e)
+void ui_event_PasswordText(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
+        _ui_keyboard_set_target(ui_Keyboard1,  ui_PasswordText);
         _ui_flag_modify(ui_Keyboard1, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_TOGGLE);
-        _ui_keyboard_set_target(ui_Keyboard1,  ui_SendText);
+    }
+}
+
+void ui_event_Connect1(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        do_wifi_connect(e);
+    }
+}
+
+void ui_event_disconnect(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        do_wifi_disconnect(e);
     }
 }
 
@@ -45,7 +66,7 @@ void ui_Screen1_screen_init(void)
     ui_TabView10 = lv_tabview_create(ui_Screen1, LV_DIR_TOP, 50);
     lv_obj_set_width(ui_TabView10, 769);
     lv_obj_set_height(ui_TabView10, 453);
-    lv_obj_set_x(ui_TabView10, 2);
+    lv_obj_set_x(ui_TabView10, 4);
     lv_obj_set_y(ui_TabView10, 1);
     lv_obj_set_align(ui_TabView10, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_TabView10, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -53,74 +74,96 @@ void ui_Screen1_screen_init(void)
 
     ui_TabPage1 = lv_tabview_add_tab(ui_TabView10, "Connect Control");
 
-    ui_Uart3TX = lv_label_create(ui_TabPage1);
-    lv_obj_set_width(ui_Uart3TX, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Uart3TX, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Uart3TX, -344);
-    lv_obj_set_y(ui_Uart3TX, -76);
-    lv_obj_set_align(ui_Uart3TX, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Uart3TX, "USART3 TX");
-
     ui_Debug = lv_label_create(ui_TabPage1);
     lv_obj_set_width(ui_Debug, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Debug, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Debug, -354);
-    lv_obj_set_y(ui_Debug, -127);
+    lv_obj_set_x(ui_Debug, -13);
+    lv_obj_set_y(ui_Debug, -170);
     lv_obj_set_align(ui_Debug, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Debug, "Debug\n");
+    lv_label_set_text(ui_Debug, "Password");
 
-    ui_Uart3RX = lv_label_create(ui_TabPage1);
-    lv_obj_set_width(ui_Uart3RX, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Uart3RX, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Uart3RX, -342);
-    lv_obj_set_y(ui_Uart3RX, 24);
-    lv_obj_set_align(ui_Uart3RX, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Uart3RX, "USART3 RX");
+    ui_Wifi_Status = lv_label_create(ui_TabPage1);
+    lv_obj_set_width(ui_Wifi_Status, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Wifi_Status, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Wifi_Status, -341);
+    lv_obj_set_y(ui_Wifi_Status, -92);
+    lv_obj_set_align(ui_Wifi_Status, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Wifi_Status, "WiFi state");
 
-    ui_GDBText = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_GDBText, 276);
-    lv_obj_set_height(ui_GDBText, 64);
-    lv_obj_set_x(ui_GDBText, -138);
-    lv_obj_set_y(ui_GDBText, -140);
-    lv_obj_set_align(ui_GDBText, LV_ALIGN_CENTER);
-    lv_textarea_set_text(ui_GDBText, "GDB");
-    lv_textarea_set_placeholder_text(ui_GDBText, "Placeholder...");
+    ui_PasswordText = lv_textarea_create(ui_TabPage1);
+    lv_obj_set_width(ui_PasswordText, 276);
+    lv_obj_set_height(ui_PasswordText, 64);
+    lv_obj_set_x(ui_PasswordText, 190);
+    lv_obj_set_y(ui_PasswordText, -157);
+    lv_obj_set_align(ui_PasswordText, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(ui_PasswordText, "Please input password...");
 
-    ui_SendText = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_SendText, 296);
-    lv_obj_set_height(ui_SendText, 88);
-    lv_obj_set_x(ui_SendText, -132);
-    lv_obj_set_y(ui_SendText, -49);
-    lv_obj_set_align(ui_SendText, LV_ALIGN_CENTER);
-    lv_textarea_set_text(ui_SendText, "hello");
-    lv_textarea_set_placeholder_text(ui_SendText, "Placeholder...");
+    ui_Wifi_List = lv_label_create(ui_TabPage1);
+    lv_obj_set_width(ui_Wifi_List, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Wifi_List, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Wifi_List, -345);
+    lv_obj_set_y(ui_Wifi_List, -170);
+    lv_obj_set_align(ui_Wifi_List, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Wifi_List, "Wifi List");
 
-    ui_ReceiText = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_ReceiText, 299);
-    lv_obj_set_height(ui_ReceiText, 162);
-    lv_obj_set_x(ui_ReceiText, -132);
-    lv_obj_set_y(ui_ReceiText, 99);
-    lv_obj_set_align(ui_ReceiText, LV_ALIGN_CENTER);
-    lv_textarea_set_text(ui_ReceiText, "hello1");
-    lv_textarea_set_placeholder_text(ui_ReceiText, "Placeholder...");
+    ui_Connect1 = lv_btn_create(ui_TabPage1);
+    lv_obj_set_width(ui_Connect1, 120);
+    lv_obj_set_height(ui_Connect1, 50);
+    lv_obj_set_x(ui_Connect1, 53);
+    lv_obj_set_y(ui_Connect1, -81);
+    lv_obj_set_align(ui_Connect1, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Connect1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_Connect1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_text_color(ui_Connect1, lv_color_hex(0xE6F3F5), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Connect1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Connect = lv_label_create(ui_Connect1);
+    lv_obj_set_width(ui_Connect, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Connect, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Connect, 5);
+    lv_obj_set_y(ui_Connect, 3);
+    lv_obj_set_align(ui_Connect, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Connect, "Connect");
 
     ui_Cmd = lv_dropdown_create(ui_TabPage1);
-    lv_dropdown_set_options(ui_Cmd,
-                            "AT\nAT+RST\n AT+CWLIF\nAT+CWMODE=1\nAT+CWJAP=\"IQOO15\",\"12345678\"\nAT+ATKCLDSTA=\"35050997308880666791\",\"12345678\"\n\n");
-    lv_obj_set_width(ui_Cmd, 337);
+    lv_dropdown_set_options(ui_Cmd, "");
+    lv_obj_set_width(ui_Cmd, 195);
     lv_obj_set_height(ui_Cmd, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Cmd, 189);
-    lv_obj_set_y(ui_Cmd, -146);
+    lv_obj_set_x(ui_Cmd, -192);
+    lv_obj_set_y(ui_Cmd, -167);
     lv_obj_set_align(ui_Cmd, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Cmd, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
 
     ui_Keyboard1 = lv_keyboard_create(ui_TabPage1);
-    lv_obj_set_width(ui_Keyboard1, 553);
-    lv_obj_set_height(ui_Keyboard1, 246);
-    lv_obj_set_x(ui_Keyboard1, 86);
-    lv_obj_set_y(ui_Keyboard1, 72);
+    lv_keyboard_set_mode(ui_Keyboard1, LV_KEYBOARD_MODE_NUMBER);
+    lv_obj_set_width(ui_Keyboard1, 623);
+    lv_obj_set_height(ui_Keyboard1, 269);
+    lv_obj_set_x(ui_Keyboard1, 76);
+    lv_obj_set_y(ui_Keyboard1, 83);
     lv_obj_set_align(ui_Keyboard1, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Keyboard1, LV_OBJ_FLAG_HIDDEN);     /// Flags
+
+    ui_Wifi_state = lv_textarea_create(ui_TabPage1);
+    lv_obj_set_width(ui_Wifi_state, 208);
+    lv_obj_set_height(ui_Wifi_state, 55);
+    lv_obj_set_x(ui_Wifi_state, -169);
+    lv_obj_set_y(ui_Wifi_state, -95);
+    lv_obj_set_align(ui_Wifi_state, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(ui_Wifi_state, "Wifi State...");
+
+    ui_disconnect = lv_btn_create(ui_TabPage1);
+    lv_obj_set_width(ui_disconnect, 120);
+    lv_obj_set_height(ui_disconnect, 50);
+    lv_obj_set_x(ui_disconnect, 223);
+    lv_obj_set_y(ui_disconnect, -80);
+    lv_obj_set_align(ui_disconnect, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_disconnect, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_disconnect, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_Label7 = lv_label_create(ui_disconnect);
+    lv_obj_set_width(ui_Label7, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label7, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label7, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label7, "Disconnect");
 
     ui_TabPage2 = lv_tabview_add_tab(ui_TabView10, "Parameter");
 
@@ -148,34 +191,36 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Label6, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label6, "Light");
 
-    ui_TextArea3 = lv_textarea_create(ui_TabPage2);
-    lv_obj_set_width(ui_TextArea3, 150);
-    lv_obj_set_height(ui_TextArea3, 40);
-    lv_obj_set_x(ui_TextArea3, -135);
-    lv_obj_set_y(ui_TextArea3, -127);
-    lv_obj_set_align(ui_TextArea3, LV_ALIGN_CENTER);
-    lv_textarea_set_placeholder_text(ui_TextArea3, "Placeholder...");
+    ui_TemperatureText = lv_textarea_create(ui_TabPage2);
+    lv_obj_set_width(ui_TemperatureText, 150);
+    lv_obj_set_height(ui_TemperatureText, 40);
+    lv_obj_set_x(ui_TemperatureText, -135);
+    lv_obj_set_y(ui_TemperatureText, -127);
+    lv_obj_set_align(ui_TemperatureText, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(ui_TemperatureText, "Placeholder...");
 
-    ui_TextArea4 = lv_textarea_create(ui_TabPage2);
-    lv_obj_set_width(ui_TextArea4, 150);
-    lv_obj_set_height(ui_TextArea4, 41);
-    lv_obj_set_x(ui_TextArea4, -137);
-    lv_obj_set_y(ui_TextArea4, -31);
-    lv_obj_set_align(ui_TextArea4, LV_ALIGN_CENTER);
-    lv_textarea_set_placeholder_text(ui_TextArea4, "Placeholder...");
+    ui_HumidityText = lv_textarea_create(ui_TabPage2);
+    lv_obj_set_width(ui_HumidityText, 150);
+    lv_obj_set_height(ui_HumidityText, 41);
+    lv_obj_set_x(ui_HumidityText, -137);
+    lv_obj_set_y(ui_HumidityText, -31);
+    lv_obj_set_align(ui_HumidityText, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(ui_HumidityText, "Placeholder...");
 
-    ui_TextArea5 = lv_textarea_create(ui_TabPage2);
-    lv_obj_set_width(ui_TextArea5, 150);
-    lv_obj_set_height(ui_TextArea5, 38);
-    lv_obj_set_x(ui_TextArea5, -136);
-    lv_obj_set_y(ui_TextArea5, 55);
-    lv_obj_set_align(ui_TextArea5, LV_ALIGN_CENTER);
-    lv_textarea_set_placeholder_text(ui_TextArea5, "Placeholder...");
+    ui_LightText = lv_textarea_create(ui_TabPage2);
+    lv_obj_set_width(ui_LightText, 150);
+    lv_obj_set_height(ui_LightText, 38);
+    lv_obj_set_x(ui_LightText, -136);
+    lv_obj_set_y(ui_LightText, 55);
+    lv_obj_set_align(ui_LightText, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(ui_LightText, "Placeholder...");
 
     ui_TabPage3 = lv_tabview_add_tab(ui_TabView10, "Adjust Control");
 
-    lv_obj_add_event_cb(ui_SendText, ui_event_SendText, LV_EVENT_ALL, NULL);
-    lv_keyboard_set_textarea(ui_Keyboard1, ui_SendText);
+    lv_obj_add_event_cb(ui_PasswordText, ui_event_PasswordText, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Connect1, ui_event_Connect1, LV_EVENT_ALL, NULL);
+    lv_keyboard_set_textarea(ui_Keyboard1, ui_PasswordText);
+    lv_obj_add_event_cb(ui_disconnect, ui_event_disconnect, LV_EVENT_ALL, NULL);
 
 }
 
@@ -187,21 +232,24 @@ void ui_Screen1_screen_destroy(void)
     ui_Screen1 = NULL;
     ui_TabView10 = NULL;
     ui_TabPage1 = NULL;
-    ui_Uart3TX = NULL;
     ui_Debug = NULL;
-    ui_Uart3RX = NULL;
-    ui_GDBText = NULL;
-    ui_SendText = NULL;
-    ui_ReceiText = NULL;
+    ui_Wifi_Status = NULL;
+    ui_PasswordText = NULL;
+    ui_Wifi_List = NULL;
+    ui_Connect1 = NULL;
+    ui_Connect = NULL;
     ui_Cmd = NULL;
     ui_Keyboard1 = NULL;
+    ui_Wifi_state = NULL;
+    ui_disconnect = NULL;
+    ui_Label7 = NULL;
     ui_TabPage2 = NULL;
     ui_Label4 = NULL;
     ui_Label5 = NULL;
     ui_Label6 = NULL;
-    ui_TextArea3 = NULL;
-    ui_TextArea4 = NULL;
-    ui_TextArea5 = NULL;
+    ui_TemperatureText = NULL;
+    ui_HumidityText = NULL;
+    ui_LightText = NULL;
     ui_TabPage3 = NULL;
 
 }
