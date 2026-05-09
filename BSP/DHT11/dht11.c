@@ -21,38 +21,38 @@ static void DHT11_DQ_IN(void)
 
 static uint8_t DHT11_Check_Response(void)
 {
-    uint8_t retry = 0;
+    uint16_t retry = 0;
     DHT11_DQ_IN();
-    while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_SET && retry < 200) {
+    while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_SET && retry < 500) {
         retry++;
         delay_us(1);
     }
-    if(retry >= 200) return 1;
+    if(retry >= 500) return 1;
 
     retry = 0;
-    while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_RESET && retry < 200) {
+    while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_RESET && retry < 500) {
         retry++;
         delay_us(1);
     }
-    if(retry >= 200) return 1;
+    if(retry >= 500) return 1;
 
     return 0;
 }
 
 static uint8_t DHT11_Read_Bit(void)
 {
-    uint8_t retry = 0;
-    while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_SET && retry < 200) {
+    uint16_t retry = 0;
+    while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_SET && retry < 500) {
         retry++; delay_us(1);
     }
     retry = 0;
-    while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_RESET && retry < 200) {
+    while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_RESET && retry < 500) {
         retry++; delay_us(1);
     }
     delay_us(40);
     if (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_SET) {
         retry = 0;
-        while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_SET && retry < 200) {
+        while (HAL_GPIO_ReadPin(DHT11_DQ_PORT, DHT11_DQ_PIN) == GPIO_PIN_SET && retry < 500) {
             retry++; delay_us(1);
         }
         return 1;
@@ -86,9 +86,9 @@ uint8_t DHT11_Read_Data(float *temperature, float *humidity)
 
     DHT11_DQ_OUT();
     HAL_GPIO_WritePin(DHT11_DQ_PORT, DHT11_DQ_PIN, GPIO_PIN_RESET);
-    HAL_Delay(18);
+    HAL_Delay(25);
     HAL_GPIO_WritePin(DHT11_DQ_PORT, DHT11_DQ_PIN, GPIO_PIN_SET);
-    delay_us(30);
+    delay_us(50);
     DHT11_DQ_IN();
 
     if (DHT11_Check_Response() != 0) return 1;

@@ -19,13 +19,41 @@ void do_wifi_connect(lv_event_t * e)
     char ssid[64] = {0};
     char password[64] = {0};
     char cmd_buf[256] = {0};
+    char display_buf[128] = {0};
 
-    lv_dropdown_get_selected_str(ui_Cmd, ssid, sizeof(ssid));
+    lv_dropdown_get_selected_str(ui_WifiList, ssid, sizeof(ssid));
     const char *pass_text = lv_textarea_get_text(ui_PasswordText);
-    strncpy(password, pass_text, sizeof(password) - 1);
+    if (pass_text != NULL) {
+        strncpy(password, pass_text, sizeof(password) - 1);
+    }
+
+    /* 过滤密码末尾的换行回车和空格（虚拟键盘容易带入） */
+    size_t pass_len = strlen(password);
+    while (pass_len > 0 && (password[pass_len - 1] == '\r' ||
+                            password[pass_len - 1] == '\n' ||
+                            password[pass_len - 1] == ' ')) {
+        password[--pass_len] = '\0';
+    }
+
+    /* 参数校验 */
+    if (ssid[0] == '\0') {
+        update_wifi_status("Error: Select WiFi first");
+        update_uart_rx_display("[Error] No WiFi selected, please scan and pick one.\n");
+        return;
+    }
+    if (password[0] == '\0') {
+        update_wifi_status("Error: Password empty");
+        update_uart_rx_display("[Error] Password is empty.\n");
+        return;
+    }
 
     snprintf(cmd_buf, sizeof(cmd_buf), "WIFI_CONNECT:%s,%s\n", ssid, password);
     Send_AT_Command(cmd_buf);
+
+    /* 调试回显：把发送的命令显示在 Rxtext（密码脱敏） */
+    snprintf(display_buf, sizeof(display_buf),
+             "[CMD] WIFI_CONNECT:%s,****** (len=%d)\n", ssid, (int)pass_len);
+    update_uart_rx_display(display_buf);
 
     update_wifi_status("Connecting...");
     LED1_Green_TOGGLE();
@@ -37,4 +65,59 @@ void do_wifi_disconnect(lv_event_t * e)
     Send_AT_Command("WIFI_DISCONNECT\n");
     update_wifi_status("Disconnected");
     LED1_Green_TOGGLE();
+}
+
+void Send_cmd(lv_event_t * e)
+{
+    (void)e;
+    const char *cmd_text = lv_textarea_get_text(ui_SendText);
+    if (cmd_text != NULL && cmd_text[0] != '\0') {
+        Send_AT_Command(cmd_text);
+    }
+}
+void keyboard_draggble(lv_event_t * e)
+{
+	// lv_obj_t * obj = lv_event_get_target(e);
+	// lv_event_code_t code = lv_event_get_code(e);
+	//
+	// static lv_coord_t last_x = 0;
+	// static lv_coord_t last_y = 0;
+	// static bool dragging = false;
+	//
+	// if(code == LV_EVENT_PRESSED) {
+	// 	// 记录初始触摸位置
+	// 	lv_indev_t * indev = lv_indev_get_act();
+	// 	if(indev) {
+	// 		lv_point_t point;
+	// 		lv_indev_get_point(indev, &point);
+	// 		last_x = point.x;
+	// 		last_y = point.y;
+	// 		dragging = true;
+	// 	}
+	// }
+	// else if(code == LV_EVENT_PRESSING && dragging) {
+	// 	// 拖动过程中更新键盘位置
+	// 	lv_indev_t * indev = lv_indev_get_act();
+	// 	if(indev) {
+	// 		lv_point_t point;
+	// 		lv_indev_get_point(indev, &point);
+	//
+	// 		// 计算偏移量
+	// 		lv_coord_t dx = point.x - last_x;
+	// 		lv_coord_t dy = point.y - last_y;
+	//
+	// 		// 更新键盘位置
+	// 		lv_coord_t new_x = lv_obj_get_x(obj) + dx;
+	// 		lv_coord_t new_y = lv_obj_get_y(obj) + dy;
+	// 		lv_obj_set_pos(obj, new_x, new_y);
+	//
+	// 		// 更新上次位置
+	// 		last_x = point.x;
+	// 		last_y = point.y;
+	// 	}
+	// }
+	// else if(code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST) {
+	// 	// 释放时停止拖动
+	// 	dragging = false;
+	// }
 }

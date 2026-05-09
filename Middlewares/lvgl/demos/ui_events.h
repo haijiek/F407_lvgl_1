@@ -11,7 +11,9 @@ extern "C" {
 #endif
 
 void do_wifi_connect(lv_event_t * e);
+void Send_cmd(lv_event_t * e);
 void do_wifi_disconnect(lv_event_t * e);
+void keyboard_draggble(lv_event_t * e);
 
 #ifdef __cplusplus
 } /*extern "C"*/

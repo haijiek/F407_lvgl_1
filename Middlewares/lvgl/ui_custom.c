@@ -29,6 +29,15 @@ static float sensor_humi = 0.0f;
 static uint16_t sensor_light = 0;
 static volatile uint8_t sensor_dirty = 0;
 
+/* ========== 串口接收数据显示（线程安全：Key_Task 写，lvgl_Task 读） ========== */
+#define UART_RX_DISPLAY_SIZE 1024
+static char uart_rx_display_buf[UART_RX_DISPLAY_SIZE] = {0};
+static volatile uint8_t uart_rx_dirty = 0;
+
+/* ========== 服务器/WebSocket 状态刷新（线程安全：Key_Task 写，lvgl_Task 读） ========== */
+static char server_status_str[64] = "Server Disconnected";
+static volatile uint8_t server_status_dirty = 0;
+
 /* ========== WiFi 扫描状态 ========== */
 static uint32_t wifi_scan_start_time = 0;
 static uint8_t wifi_scanning = 0;
@@ -43,6 +52,14 @@ void update_wifi_status(const char *status)
     strncpy(wifi_status_str, status, sizeof(wifi_status_str) - 1);
     wifi_status_str[sizeof(wifi_status_str) - 1] = '\0';
     wifi_status_dirty = 1;
+}
+
+void update_server_status(const char *status)
+{
+    if(status == NULL) return;
+    strncpy(server_status_str, status, sizeof(server_status_str) - 1);
+    server_status_str[sizeof(server_status_str) - 1] = '\0';
+    server_status_dirty = 1;
 }
 
 void parse_wifi_list(const char *response)
@@ -85,6 +102,31 @@ void update_sensor_display(float temperature, float humidity, uint16_t light)
     sensor_dirty = 1;
 }
 
+/* ========== 串口接收数据 UI 更新接口 ========== */
+
+void update_uart_rx_display(const char *data)
+{
+    if(data == NULL) return;
+
+    size_t data_len = strlen(data);
+    size_t current_len = strlen(uart_rx_display_buf);
+
+    // 如果缓冲区快满了，清空前半部分，保留最新的数据
+    if(current_len + data_len >= UART_RX_DISPLAY_SIZE - 10) {
+        // 保留后半部分数据
+        size_t keep_size = UART_RX_DISPLAY_SIZE / 2;
+        memmove(uart_rx_display_buf,
+                uart_rx_display_buf + current_len - keep_size,
+                keep_size);
+        uart_rx_display_buf[keep_size] = '\0';
+        current_len = keep_size;
+    }
+
+    // 追加新数据
+    strncat(uart_rx_display_buf, data, UART_RX_DISPLAY_SIZE - current_len - 1);
+    uart_rx_dirty = 1;
+}
+
 /* 在 lvgl_Task 中调用，将标记的 UI 更新实际应用到屏幕 */
 void apply_ui_updates(void)
 {
@@ -97,7 +139,7 @@ void apply_ui_updates(void)
     /* --- WiFi 列表 --- */
     if(wifi_dropdown_dirty) {
         wifi_dropdown_dirty = 0;
-        lv_dropdown_set_options(ui_Cmd, wifi_dropdown_options);
+        lv_dropdown_set_options(ui_WifiList, wifi_dropdown_options);
     }
 
     /* --- 传感器数据（Parameter 选项卡）--- */
@@ -113,6 +155,18 @@ void apply_ui_updates(void)
 
         snprintf(buf, sizeof(buf), "%d", sensor_light);
         lv_textarea_set_text(ui_LightText, buf);
+    }
+
+    /* --- 串口接收数据显示 --- */
+    if(uart_rx_dirty) {
+        uart_rx_dirty = 0;
+        lv_textarea_set_text(ui_Rxtext, uart_rx_display_buf);
+    }
+
+    /* --- 服务器/WebSocket 状态 --- */
+    if(server_status_dirty) {
+        server_status_dirty = 0;
+        lv_textarea_set_text(ui_ServerArea2, server_status_str);
     }
 }
 

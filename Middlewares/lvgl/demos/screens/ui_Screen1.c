@@ -8,17 +8,26 @@
 lv_obj_t * ui_Screen1 = NULL;
 lv_obj_t * ui_TabView10 = NULL;
 lv_obj_t * ui_TabPage1 = NULL;
+lv_obj_t * ui_RefreshButton1 = NULL;
+lv_obj_t * ui_Label2 = NULL;
 lv_obj_t * ui_Debug = NULL;
 lv_obj_t * ui_Wifi_Status = NULL;
 lv_obj_t * ui_PasswordText = NULL;
-lv_obj_t * ui_Wifi_List = NULL;
+lv_obj_t * ui_WifiLabel = NULL;
 lv_obj_t * ui_Connect1 = NULL;
 lv_obj_t * ui_Connect = NULL;
-lv_obj_t * ui_Cmd = NULL;
-lv_obj_t * ui_Keyboard1 = NULL;
+lv_obj_t * ui_SendCmd = NULL;
+lv_obj_t * ui_Label1 = NULL;
+lv_obj_t * ui_WifiList = NULL;
 lv_obj_t * ui_Wifi_state = NULL;
 lv_obj_t * ui_disconnect = NULL;
 lv_obj_t * ui_Label7 = NULL;
+lv_obj_t * ui_SendText = NULL;
+lv_obj_t * ui_Rxstr = NULL;
+lv_obj_t * ui_Rxtext = NULL;
+lv_obj_t * ui_Keyboard1 = NULL;
+lv_obj_t * ui_ServerLabel = NULL;
+lv_obj_t * ui_ServerArea2 = NULL;
 lv_obj_t * ui_TabPage2 = NULL;
 lv_obj_t * ui_Label4 = NULL;
 lv_obj_t * ui_Label5 = NULL;
@@ -27,6 +36,12 @@ lv_obj_t * ui_TemperatureText = NULL;
 lv_obj_t * ui_HumidityText = NULL;
 lv_obj_t * ui_LightText = NULL;
 lv_obj_t * ui_TabPage3 = NULL;
+lv_obj_t * ui_TempSlider = NULL;
+lv_obj_t * ui_HumiditySlider = NULL;
+lv_obj_t * ui_LightSlider = NULL;
+lv_obj_t * ui_humidityLabel = NULL;
+lv_obj_t * ui_TempLabel = NULL;
+lv_obj_t * ui_LightLabel = NULL;
 // event funtions
 void ui_event_PasswordText(lv_event_t * e)
 {
@@ -47,12 +62,40 @@ void ui_event_Connect1(lv_event_t * e)
     }
 }
 
+void ui_event_SendCmd(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        Send_cmd(e);
+    }
+}
+
 void ui_event_disconnect(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
         do_wifi_disconnect(e);
+    }
+}
+
+void ui_event_SendText(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_flag_modify(ui_Keyboard1, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_TOGGLE);
+        _ui_keyboard_set_target(ui_Keyboard1,  ui_SendText);
+    }
+}
+
+void ui_event_Keyboard1(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_PRESSED) {
+        keyboard_draggble(e);
     }
 }
 
@@ -69,48 +112,65 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_x(ui_TabView10, 4);
     lv_obj_set_y(ui_TabView10, 1);
     lv_obj_set_align(ui_TabView10, LV_ALIGN_CENTER);
-    lv_obj_clear_flag(ui_TabView10, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
-                      LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE);     /// Flags
+    lv_obj_clear_flag(ui_TabView10, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE |
+                      LV_OBJ_FLAG_GESTURE_BUBBLE | LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE);     /// Flags
 
     ui_TabPage1 = lv_tabview_add_tab(ui_TabView10, "Connect Control");
+    lv_obj_clear_flag(ui_TabPage1, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_GESTURE_BUBBLE | LV_OBJ_FLAG_SCROLLABLE |
+                      LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM | LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
+
+    ui_RefreshButton1 = lv_btn_create(ui_TabPage1);
+    lv_obj_set_width(ui_RefreshButton1, 246);
+    lv_obj_set_height(ui_RefreshButton1, 47);
+    lv_obj_set_x(ui_RefreshButton1, -169);
+    lv_obj_set_y(ui_RefreshButton1, -104);
+    lv_obj_set_align(ui_RefreshButton1, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_RefreshButton1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_RefreshButton1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_Label2 = lv_label_create(ui_RefreshButton1);
+    lv_obj_set_width(ui_Label2, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label2, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label2, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label2, "Refresh Wifi");
 
     ui_Debug = lv_label_create(ui_TabPage1);
     lv_obj_set_width(ui_Debug, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Debug, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Debug, -13);
-    lv_obj_set_y(ui_Debug, -170);
+    lv_obj_set_x(ui_Debug, 21);
+    lv_obj_set_y(ui_Debug, -166);
     lv_obj_set_align(ui_Debug, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Debug, "Password");
 
     ui_Wifi_Status = lv_label_create(ui_TabPage1);
     lv_obj_set_width(ui_Wifi_Status, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Wifi_Status, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Wifi_Status, -341);
-    lv_obj_set_y(ui_Wifi_Status, -92);
+    lv_obj_set_x(ui_Wifi_Status, -343);
+    lv_obj_set_y(ui_Wifi_Status, -18);
     lv_obj_set_align(ui_Wifi_Status, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Wifi_Status, "WiFi state");
 
     ui_PasswordText = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_PasswordText, 276);
-    lv_obj_set_height(ui_PasswordText, 64);
-    lv_obj_set_x(ui_PasswordText, 190);
-    lv_obj_set_y(ui_PasswordText, -157);
+    lv_obj_set_width(ui_PasswordText, 293);
+    lv_obj_set_height(ui_PasswordText, 43);
+    lv_obj_set_x(ui_PasswordText, 220);
+    lv_obj_set_y(ui_PasswordText, -167);
     lv_obj_set_align(ui_PasswordText, LV_ALIGN_CENTER);
     lv_textarea_set_placeholder_text(ui_PasswordText, "Please input password...");
 
-    ui_Wifi_List = lv_label_create(ui_TabPage1);
-    lv_obj_set_width(ui_Wifi_List, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Wifi_List, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Wifi_List, -345);
-    lv_obj_set_y(ui_Wifi_List, -170);
-    lv_obj_set_align(ui_Wifi_List, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Wifi_List, "Wifi List");
+    ui_WifiLabel = lv_label_create(ui_TabPage1);
+    lv_obj_set_width(ui_WifiLabel, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_WifiLabel, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_WifiLabel, -334);
+    lv_obj_set_y(ui_WifiLabel, -165);
+    lv_obj_set_align(ui_WifiLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_WifiLabel, "Wifi List");
 
     ui_Connect1 = lv_btn_create(ui_TabPage1);
-    lv_obj_set_width(ui_Connect1, 120);
-    lv_obj_set_height(ui_Connect1, 50);
-    lv_obj_set_x(ui_Connect1, 53);
-    lv_obj_set_y(ui_Connect1, -81);
+    lv_obj_set_width(ui_Connect1, 133);
+    lv_obj_set_height(ui_Connect1, 47);
+    lv_obj_set_x(ui_Connect1, 139);
+    lv_obj_set_y(ui_Connect1, -104);
     lv_obj_set_align(ui_Connect1, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Connect1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_Connect1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
@@ -125,36 +185,43 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Connect, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Connect, "Connect");
 
-    ui_Cmd = lv_dropdown_create(ui_TabPage1);
-    lv_dropdown_set_options(ui_Cmd, "");
-    lv_obj_set_width(ui_Cmd, 195);
-    lv_obj_set_height(ui_Cmd, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Cmd, -192);
-    lv_obj_set_y(ui_Cmd, -167);
-    lv_obj_set_align(ui_Cmd, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Cmd, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    ui_SendCmd = lv_btn_create(ui_TabPage1);
+    lv_obj_set_width(ui_SendCmd, 100);
+    lv_obj_set_height(ui_SendCmd, 44);
+    lv_obj_set_x(ui_SendCmd, -98);
+    lv_obj_set_y(ui_SendCmd, 148);
+    lv_obj_set_align(ui_SendCmd, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_SendCmd, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_SendCmd, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
-    ui_Keyboard1 = lv_keyboard_create(ui_TabPage1);
-    lv_keyboard_set_mode(ui_Keyboard1, LV_KEYBOARD_MODE_NUMBER);
-    lv_obj_set_width(ui_Keyboard1, 623);
-    lv_obj_set_height(ui_Keyboard1, 269);
-    lv_obj_set_x(ui_Keyboard1, 76);
-    lv_obj_set_y(ui_Keyboard1, 83);
-    lv_obj_set_align(ui_Keyboard1, LV_ALIGN_CENTER);
+    ui_Label1 = lv_label_create(ui_SendCmd);
+    lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label1, "Sendcmd");
+
+    ui_WifiList = lv_dropdown_create(ui_TabPage1);
+    lv_dropdown_set_options(ui_WifiList, "");
+    lv_obj_set_width(ui_WifiList, 251);
+    lv_obj_set_height(ui_WifiList, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_WifiList, -168);
+    lv_obj_set_y(ui_WifiList, -166);
+    lv_obj_set_align(ui_WifiList, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_WifiList, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
 
     ui_Wifi_state = lv_textarea_create(ui_TabPage1);
-    lv_obj_set_width(ui_Wifi_state, 208);
-    lv_obj_set_height(ui_Wifi_state, 55);
+    lv_obj_set_width(ui_Wifi_state, 250);
+    lv_obj_set_height(ui_Wifi_state, 46);
     lv_obj_set_x(ui_Wifi_state, -169);
-    lv_obj_set_y(ui_Wifi_state, -95);
+    lv_obj_set_y(ui_Wifi_state, -11);
     lv_obj_set_align(ui_Wifi_state, LV_ALIGN_CENTER);
     lv_textarea_set_placeholder_text(ui_Wifi_state, "Wifi State...");
 
     ui_disconnect = lv_btn_create(ui_TabPage1);
     lv_obj_set_width(ui_disconnect, 120);
     lv_obj_set_height(ui_disconnect, 50);
-    lv_obj_set_x(ui_disconnect, 223);
-    lv_obj_set_y(ui_disconnect, -80);
+    lv_obj_set_x(ui_disconnect, 295);
+    lv_obj_set_y(ui_disconnect, -104);
     lv_obj_set_align(ui_disconnect, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_disconnect, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_disconnect, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
@@ -165,7 +232,62 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Label7, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label7, "Disconnect");
 
+    ui_SendText = lv_textarea_create(ui_TabPage1);
+    lv_obj_set_width(ui_SendText, 221);
+    lv_obj_set_height(ui_SendText, 45);
+    lv_obj_set_x(ui_SendText, -271);
+    lv_obj_set_y(ui_SendText, 146);
+    lv_obj_set_align(ui_SendText, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(ui_SendText, "Cmd...");
+
+    ui_Rxstr = lv_label_create(ui_TabPage1);
+    lv_obj_set_width(ui_Rxstr, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Rxstr, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Rxstr, 5);
+    lv_obj_set_y(ui_Rxstr, -26);
+    lv_obj_set_align(ui_Rxstr, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Rxstr, "log :");
+
+    ui_Rxtext = lv_textarea_create(ui_TabPage1);
+    lv_obj_set_width(ui_Rxtext, 316);
+    lv_obj_set_height(ui_Rxtext, 237);
+    lv_obj_set_x(ui_Rxtext, 209);
+    lv_obj_set_y(ui_Rxtext, 74);
+    lv_obj_set_align(ui_Rxtext, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(ui_Rxtext, "log...");
+
+    ui_Keyboard1 = lv_keyboard_create(ui_TabPage1);
+    lv_obj_set_width(ui_Keyboard1, 623);
+    lv_obj_set_height(ui_Keyboard1, 269);
+    lv_obj_set_x(ui_Keyboard1, 64);
+    lv_obj_set_y(ui_Keyboard1, 71);
+    lv_obj_set_align(ui_Keyboard1, LV_ALIGN_CENTER);
+    lv_obj_set_flex_flow(ui_Keyboard1, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(ui_Keyboard1, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_add_flag(ui_Keyboard1, LV_OBJ_FLAG_HIDDEN);     /// Flags
+    lv_obj_clear_flag(ui_Keyboard1, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_GESTURE_BUBBLE | LV_OBJ_FLAG_SNAPPABLE |
+                      LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
+                      LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
+
+    ui_ServerLabel = lv_label_create(ui_TabPage1);
+    lv_obj_set_width(ui_ServerLabel, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_ServerLabel, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_ServerLabel, -338);
+    lv_obj_set_y(ui_ServerLabel, 57);
+    lv_obj_set_align(ui_ServerLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_ServerLabel, "Server state");
+
+    ui_ServerArea2 = lv_textarea_create(ui_TabPage1);
+    lv_obj_set_width(ui_ServerArea2, 229);
+    lv_obj_set_height(ui_ServerArea2, 43);
+    lv_obj_set_x(ui_ServerArea2, -160);
+    lv_obj_set_y(ui_ServerArea2, 58);
+    lv_obj_set_align(ui_ServerArea2, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(ui_ServerArea2, "Server State...");
+
     ui_TabPage2 = lv_tabview_add_tab(ui_TabView10, "Parameter");
+    lv_obj_clear_flag(ui_TabPage2, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_GESTURE_BUBBLE | LV_OBJ_FLAG_SCROLLABLE |
+                      LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM | LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
 
     ui_Label4 = lv_label_create(ui_TabPage2);
     lv_obj_set_width(ui_Label4, LV_SIZE_CONTENT);   /// 1
@@ -216,11 +338,68 @@ void ui_Screen1_screen_init(void)
     lv_textarea_set_placeholder_text(ui_LightText, "Placeholder...");
 
     ui_TabPage3 = lv_tabview_add_tab(ui_TabView10, "Adjust Control");
+    lv_obj_clear_flag(ui_TabPage3, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC |
+                      LV_OBJ_FLAG_SCROLL_MOMENTUM | LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
+
+    ui_TempSlider = lv_slider_create(ui_TabPage3);
+    lv_slider_set_value(ui_TempSlider, 0, LV_ANIM_OFF);
+    if(lv_slider_get_mode(ui_TempSlider) == LV_SLIDER_MODE_RANGE) lv_slider_set_left_value(ui_TempSlider, 0, LV_ANIM_OFF);
+    lv_obj_set_width(ui_TempSlider, 260);
+    lv_obj_set_height(ui_TempSlider, 18);
+    lv_obj_set_x(ui_TempSlider, 60);
+    lv_obj_set_y(ui_TempSlider, -125);
+    lv_obj_set_align(ui_TempSlider, LV_ALIGN_CENTER);
+
+    ui_HumiditySlider = lv_slider_create(ui_TabPage3);
+    lv_slider_set_value(ui_HumiditySlider, 0, LV_ANIM_OFF);
+    if(lv_slider_get_mode(ui_HumiditySlider) == LV_SLIDER_MODE_RANGE) lv_slider_set_left_value(ui_HumiditySlider, 0,
+                                                                                                   LV_ANIM_OFF);
+    lv_obj_set_width(ui_HumiditySlider, 262);
+    lv_obj_set_height(ui_HumiditySlider, 19);
+    lv_obj_set_x(ui_HumiditySlider, 60);
+    lv_obj_set_y(ui_HumiditySlider, -43);
+    lv_obj_set_align(ui_HumiditySlider, LV_ALIGN_CENTER);
+
+    ui_LightSlider = lv_slider_create(ui_TabPage3);
+    lv_slider_set_value(ui_LightSlider, 0, LV_ANIM_OFF);
+    if(lv_slider_get_mode(ui_LightSlider) == LV_SLIDER_MODE_RANGE) lv_slider_set_left_value(ui_LightSlider, 0, LV_ANIM_OFF);
+    lv_obj_set_width(ui_LightSlider, 252);
+    lv_obj_set_height(ui_LightSlider, 18);
+    lv_obj_set_x(ui_LightSlider, 56);
+    lv_obj_set_y(ui_LightSlider, 56);
+    lv_obj_set_align(ui_LightSlider, LV_ALIGN_CENTER);
+
+    ui_humidityLabel = lv_label_create(ui_TabPage3);
+    lv_obj_set_width(ui_humidityLabel, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_humidityLabel, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_humidityLabel, -247);
+    lv_obj_set_y(ui_humidityLabel, -43);
+    lv_obj_set_align(ui_humidityLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_humidityLabel, "Humidity Threshold");
+
+    ui_TempLabel = lv_label_create(ui_TabPage3);
+    lv_obj_set_width(ui_TempLabel, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_TempLabel, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_TempLabel, -242);
+    lv_obj_set_y(ui_TempLabel, -126);
+    lv_obj_set_align(ui_TempLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_TempLabel, "Temperature Threshold");
+
+    ui_LightLabel = lv_label_create(ui_TabPage3);
+    lv_obj_set_width(ui_LightLabel, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_LightLabel, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_LightLabel, -239);
+    lv_obj_set_y(ui_LightLabel, 53);
+    lv_obj_set_align(ui_LightLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_LightLabel, "IIIumination Threshold");
 
     lv_obj_add_event_cb(ui_PasswordText, ui_event_PasswordText, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Connect1, ui_event_Connect1, LV_EVENT_ALL, NULL);
-    lv_keyboard_set_textarea(ui_Keyboard1, ui_PasswordText);
+    lv_obj_add_event_cb(ui_SendCmd, ui_event_SendCmd, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_disconnect, ui_event_disconnect, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_SendText, ui_event_SendText, LV_EVENT_ALL, NULL);
+    lv_keyboard_set_textarea(ui_Keyboard1, ui_SendText);
+    lv_obj_add_event_cb(ui_Keyboard1, ui_event_Keyboard1, LV_EVENT_ALL, NULL);
 
 }
 
@@ -232,17 +411,26 @@ void ui_Screen1_screen_destroy(void)
     ui_Screen1 = NULL;
     ui_TabView10 = NULL;
     ui_TabPage1 = NULL;
+    ui_RefreshButton1 = NULL;
+    ui_Label2 = NULL;
     ui_Debug = NULL;
     ui_Wifi_Status = NULL;
     ui_PasswordText = NULL;
-    ui_Wifi_List = NULL;
+    ui_WifiLabel = NULL;
     ui_Connect1 = NULL;
     ui_Connect = NULL;
-    ui_Cmd = NULL;
-    ui_Keyboard1 = NULL;
+    ui_SendCmd = NULL;
+    ui_Label1 = NULL;
+    ui_WifiList = NULL;
     ui_Wifi_state = NULL;
     ui_disconnect = NULL;
     ui_Label7 = NULL;
+    ui_SendText = NULL;
+    ui_Rxstr = NULL;
+    ui_Rxtext = NULL;
+    ui_Keyboard1 = NULL;
+    ui_ServerLabel = NULL;
+    ui_ServerArea2 = NULL;
     ui_TabPage2 = NULL;
     ui_Label4 = NULL;
     ui_Label5 = NULL;
@@ -251,5 +439,11 @@ void ui_Screen1_screen_destroy(void)
     ui_HumidityText = NULL;
     ui_LightText = NULL;
     ui_TabPage3 = NULL;
+    ui_TempSlider = NULL;
+    ui_HumiditySlider = NULL;
+    ui_LightSlider = NULL;
+    ui_humidityLabel = NULL;
+    ui_TempLabel = NULL;
+    ui_LightLabel = NULL;
 
 }

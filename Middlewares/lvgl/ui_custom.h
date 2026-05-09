@@ -23,6 +23,12 @@ void apply_ui_updates(void);
 /* ========== 传感器 UI 更新（线程安全：Sensor_Task 标记，lvgl_Task 执行） ========== */
 void update_sensor_display(float temperature, float humidity, uint16_t light);
 
+/* ========== 串口接收数据显示（线程安全：Key_Task 标记，lvgl_Task 执行） ========== */
+void update_uart_rx_display(const char *data);
+
+/* ========== 服务器/WebSocket 状态显示（线程安全：Key_Task 标记，lvgl_Task 执行） ========== */
+void update_server_status(const char *status);
+
 /* ========== WiFi 扫描控制 ========== */
 void wifi_scan_start(void);
 uint8_t is_wifi_scanning(void);
