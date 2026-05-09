@@ -47,7 +47,7 @@ void do_wifi_connect(lv_event_t * e)
         return;
     }
 
-    snprintf(cmd_buf, sizeof(cmd_buf), "WIFI_CONNECT:%s,%s\n", ssid, password);
+    snprintf(cmd_buf, sizeof(cmd_buf), "WIFI_CONNECT:%s,%s", ssid, password);
     Send_AT_Command(cmd_buf);
 
     /* 调试回显：把发送的命令显示在 Rxtext（密码脱敏） */
@@ -62,7 +62,7 @@ void do_wifi_connect(lv_event_t * e)
 void do_wifi_disconnect(lv_event_t * e)
 {
     (void)e;
-    Send_AT_Command("WIFI_DISCONNECT\n");
+    Send_AT_Command("WIFI_DISCONNECT");
     update_wifi_status("Disconnected");
     LED1_Green_TOGGLE();
 }
@@ -75,49 +75,14 @@ void Send_cmd(lv_event_t * e)
         Send_AT_Command(cmd_text);
     }
 }
+void do_wifi_refresh(lv_event_t * e)
+{
+    (void)e;
+    wifi_scan_start();
+    LED1_Green_TOGGLE();
+}
+
 void keyboard_draggble(lv_event_t * e)
 {
-	// lv_obj_t * obj = lv_event_get_target(e);
-	// lv_event_code_t code = lv_event_get_code(e);
-	//
-	// static lv_coord_t last_x = 0;
-	// static lv_coord_t last_y = 0;
-	// static bool dragging = false;
-	//
-	// if(code == LV_EVENT_PRESSED) {
-	// 	// 记录初始触摸位置
-	// 	lv_indev_t * indev = lv_indev_get_act();
-	// 	if(indev) {
-	// 		lv_point_t point;
-	// 		lv_indev_get_point(indev, &point);
-	// 		last_x = point.x;
-	// 		last_y = point.y;
-	// 		dragging = true;
-	// 	}
-	// }
-	// else if(code == LV_EVENT_PRESSING && dragging) {
-	// 	// 拖动过程中更新键盘位置
-	// 	lv_indev_t * indev = lv_indev_get_act();
-	// 	if(indev) {
-	// 		lv_point_t point;
-	// 		lv_indev_get_point(indev, &point);
-	//
-	// 		// 计算偏移量
-	// 		lv_coord_t dx = point.x - last_x;
-	// 		lv_coord_t dy = point.y - last_y;
-	//
-	// 		// 更新键盘位置
-	// 		lv_coord_t new_x = lv_obj_get_x(obj) + dx;
-	// 		lv_coord_t new_y = lv_obj_get_y(obj) + dy;
-	// 		lv_obj_set_pos(obj, new_x, new_y);
-	//
-	// 		// 更新上次位置
-	// 		last_x = point.x;
-	// 		last_y = point.y;
-	// 	}
-	// }
-	// else if(code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST) {
-	// 	// 释放时停止拖动
-	// 	dragging = false;
-	// }
+    (void)e;
 }

@@ -174,7 +174,7 @@ void apply_ui_updates(void)
 
 void wifi_scan_start(void)
 {
-    Send_AT_Command("WIFI_SCAN\n");
+    Send_AT_Command("WIFI_SCAN");
     wifi_scanning = 1;
     wifi_scan_start_time = osKernelGetTickCount();
 }

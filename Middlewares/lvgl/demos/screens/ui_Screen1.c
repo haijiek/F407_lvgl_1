@@ -25,9 +25,9 @@ lv_obj_t * ui_Label7 = NULL;
 lv_obj_t * ui_SendText = NULL;
 lv_obj_t * ui_Rxstr = NULL;
 lv_obj_t * ui_Rxtext = NULL;
-lv_obj_t * ui_Keyboard1 = NULL;
 lv_obj_t * ui_ServerLabel = NULL;
 lv_obj_t * ui_ServerArea2 = NULL;
+lv_obj_t * ui_Keyboard1 = NULL;
 lv_obj_t * ui_TabPage2 = NULL;
 lv_obj_t * ui_Label4 = NULL;
 lv_obj_t * ui_Label5 = NULL;
@@ -96,6 +96,15 @@ void ui_event_Keyboard1(lv_event_t * e)
 
     if(event_code == LV_EVENT_PRESSED) {
         keyboard_draggble(e);
+    }
+}
+
+void ui_event_RefreshButton1(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        do_wifi_refresh(e);
     }
 }
 
@@ -256,19 +265,6 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Rxtext, LV_ALIGN_CENTER);
     lv_textarea_set_placeholder_text(ui_Rxtext, "log...");
 
-    ui_Keyboard1 = lv_keyboard_create(ui_TabPage1);
-    lv_obj_set_width(ui_Keyboard1, 623);
-    lv_obj_set_height(ui_Keyboard1, 269);
-    lv_obj_set_x(ui_Keyboard1, 64);
-    lv_obj_set_y(ui_Keyboard1, 71);
-    lv_obj_set_align(ui_Keyboard1, LV_ALIGN_CENTER);
-    lv_obj_set_flex_flow(ui_Keyboard1, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(ui_Keyboard1, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_add_flag(ui_Keyboard1, LV_OBJ_FLAG_HIDDEN);     /// Flags
-    lv_obj_clear_flag(ui_Keyboard1, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_GESTURE_BUBBLE | LV_OBJ_FLAG_SNAPPABLE |
-                      LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
-                      LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
-
     ui_ServerLabel = lv_label_create(ui_TabPage1);
     lv_obj_set_width(ui_ServerLabel, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_ServerLabel, LV_SIZE_CONTENT);    /// 1
@@ -284,6 +280,19 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_y(ui_ServerArea2, 58);
     lv_obj_set_align(ui_ServerArea2, LV_ALIGN_CENTER);
     lv_textarea_set_placeholder_text(ui_ServerArea2, "Server State...");
+
+    ui_Keyboard1 = lv_keyboard_create(ui_TabPage1);
+    lv_obj_set_width(ui_Keyboard1, 623);
+    lv_obj_set_height(ui_Keyboard1, 269);
+    lv_obj_set_x(ui_Keyboard1, 64);
+    lv_obj_set_y(ui_Keyboard1, 71);
+    lv_obj_set_align(ui_Keyboard1, LV_ALIGN_CENTER);
+    lv_obj_set_flex_flow(ui_Keyboard1, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(ui_Keyboard1, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_add_flag(ui_Keyboard1, LV_OBJ_FLAG_HIDDEN);     /// Flags
+    lv_obj_clear_flag(ui_Keyboard1, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_GESTURE_BUBBLE | LV_OBJ_FLAG_SNAPPABLE |
+                      LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
+                      LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
 
     ui_TabPage2 = lv_tabview_add_tab(ui_TabView10, "Parameter");
     lv_obj_clear_flag(ui_TabPage2, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_GESTURE_BUBBLE | LV_OBJ_FLAG_SCROLLABLE |
@@ -400,6 +409,7 @@ void ui_Screen1_screen_init(void)
     lv_obj_add_event_cb(ui_SendText, ui_event_SendText, LV_EVENT_ALL, NULL);
     lv_keyboard_set_textarea(ui_Keyboard1, ui_SendText);
     lv_obj_add_event_cb(ui_Keyboard1, ui_event_Keyboard1, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_RefreshButton1, ui_event_RefreshButton1, LV_EVENT_ALL, NULL);
 
 }
 
@@ -428,9 +438,9 @@ void ui_Screen1_screen_destroy(void)
     ui_SendText = NULL;
     ui_Rxstr = NULL;
     ui_Rxtext = NULL;
-    ui_Keyboard1 = NULL;
     ui_ServerLabel = NULL;
     ui_ServerArea2 = NULL;
+    ui_Keyboard1 = NULL;
     ui_TabPage2 = NULL;
     ui_Label4 = NULL;
     ui_Label5 = NULL;

@@ -22,9 +22,15 @@
 
 /* USER CODE BEGIN 0 */
 #include "stdio.h"
+#include "stdbool.h"
 #include "string.h"
 #include "stdarg.h"
 #include "ui.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+extern osMutexId_t my_Printf_Mutex01Handle;
 
 USART3_RxHandler_t usart3_rx_handler = {0};
 USART3_TxHandler_t usart3_tx_handler = {0};
@@ -144,8 +150,18 @@ void USART3_Init_IO(void)
 
 PUTCHAR_PROTOTYPE
 {
-  // 超时改为 2ms，单字符足够，失败立即返回
+  /* 调度器启动且 mutex 已建立后才加锁，启动前/中断里直接发，避免死锁 */
+  bool can_lock = (my_Printf_Mutex01Handle != NULL) &&
+                  (osKernelGetState() == osKernelRunning) &&
+                  (xPortIsInsideInterrupt() == pdFALSE);
+
+  if (can_lock) {
+    osMutexAcquire(my_Printf_Mutex01Handle, osWaitForever);
+  }
   HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 10);
+  if (can_lock) {
+    osMutexRelease(my_Printf_Mutex01Handle);
+  }
   return ch;
 }
 /* 便捷宏，自动加换行 */

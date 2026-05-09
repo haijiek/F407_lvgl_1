@@ -6,5 +6,6 @@
     <file url="file://$PROJECT_DIR$/BSP/TOUCH/ctiic.c" charset="GB2312" />
     <file url="file://$PROJECT_DIR$/BSP/TOUCH/touch.c" charset="GB2312" />
     <file url="file://$PROJECT_DIR$/Middlewares/lvgl/lvgl.h" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/Prj_log.md" charset="UTF-8" />
   </component>
 </project>

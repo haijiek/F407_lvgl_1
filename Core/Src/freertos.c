@@ -145,8 +145,8 @@ void MX_FREERTOS_Init(void) {
   /* creation of lvgl_Timer01 */
   lvgl_Timer01Handle = osTimerNew(lvgl_Callback01, osTimerPeriodic, NULL, &lvgl_Timer01_attributes);
 
-  /* creation of Wifi_Timer02 */
-  Wifi_Timer02Handle = osTimerNew(Callback02, osTimerPeriodic, NULL, &Wifi_Timer02_attributes);
+  /* creation of Wifi_Timer02 (one-shot: auto scan WiFi 2s after power-on) */
+  Wifi_Timer02Handle = osTimerNew(Callback02, osTimerOnce, NULL, &Wifi_Timer02_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
@@ -159,6 +159,9 @@ void MX_FREERTOS_Init(void) {
   /* Create the thread(s) */
   /* creation of lvgl_Task */
   lvgl_TaskHandle = osThreadNew(Start_lvgl_Task01, NULL, &lvgl_Task_attributes);
+
+  /* Start one-shot WiFi scan timer: 2s after boot */
+  osTimerStart(Wifi_Timer02Handle, 2000);
 
   /* creation of touch_Task02 */
   touch_Task02Handle = osThreadNew(Start_touch_Task02, NULL, &touch_Task02_attributes);
@@ -194,6 +197,7 @@ void Start_lvgl_Task01(void *argument)
   lv_port_indev_init();
 
   ui_init();
+
   osTimerStart(lvgl_Timer01Handle, 5);  /* 5ms tick timer */
 
   /* Infinite loop */
@@ -228,15 +232,11 @@ void Start_lvgl_Task01(void *argument)
 void Start_touch_Task02(void *argument)
 {
   /* USER CODE BEGIN Start_touch_Task02 */
-  char GBD_buf[32] = {0};
-  char last_tx_buf[64] = {0};
-  char last_rx_buf[64] = {0};
+  (void)argument;
 
-  /* Infinite loop - 更新串口数据显示到UI */
+  /* Infinite loop - 预留任务，可用于未来扩展 */
   for(;;)
   {
-    /* 只在数据变化时才更新UI,减少不必要的刷新 */
-
     /* 100ms刷新一次足够显示串口数据 */
     osDelay(100);
   }
@@ -253,8 +253,23 @@ void Start_touch_Task02(void *argument)
 /* WiFi functions moved to wifi_control.c */
 void Send_AT_Command(const char *cmd)
 {
-    printf("%s\r\n", cmd);
+    if (cmd == NULL) return;
+
+    size_t len = strlen(cmd);
+    while (len > 0 && (cmd[len - 1] == '\r' || cmd[len - 1] == '\n')) {
+        len--;
+    }
+    if (len == 0) return;
+
+    osMutexAcquire(my_Printf_Mutex01Handle, osWaitForever);
+    HAL_UART_Transmit(&huart3, (const uint8_t *)cmd, (uint16_t)len, 200);
+    HAL_UART_Transmit(&huart3, (const uint8_t *)"\n", 1, 20);
+    osMutexRelease(my_Printf_Mutex01Handle);
 }
+
+/* Status deduplication buffers */
+static char last_wifi_status[32] = "Disconnected";
+static char last_server_status[32] = "Server Disconnected";
 /* USER CODE END Header_Start_Key_Task03 */
 void Start_Key_Task03(void *argument)
 {
@@ -266,10 +281,8 @@ void Start_Key_Task03(void *argument)
   uint8_t key1_cnt = 0, key1_trig = 0;
   uint8_t key2_cnt = 0, key2_trig = 0;
 
-  // 上电自动扫描：等待 ESP-01 启动完成（2秒）
-  osDelay(2000);
   update_wifi_status("Disconnected");
-  wifi_scan_start();
+  /* WiFi scan is now triggered by Wifi_Timer02 after 2s power-on delay */
 
   for(;;)
   {
@@ -301,6 +314,10 @@ void Start_Key_Task03(void *argument)
             strcpy(last_wifi_status, "Password Error");
             update_uart_rx_display(rx);
           }
+        }
+        else if(strstr(rx, "STATUS:BUSY")) {
+          update_wifi_status("ESP busy, retry");
+          update_uart_rx_display(rx);
         }
         else if(strstr(rx, "STATUS:CONNECTING")) {
           update_wifi_status("Connecting...");
@@ -406,7 +423,7 @@ void Start_Key_Task03(void *argument)
     static uint32_t last_status_query = 0;
     if(osKernelGetTickCount() - last_status_query > 3000) {
       last_status_query = osKernelGetTickCount();
-      Send_AT_Command("WIFI_STATUS\n");
+      Send_AT_Command("WIFI_STATUS");
     }
 
     osDelay(10);
@@ -424,6 +441,7 @@ void Start_Key_Task03(void *argument)
 void Start_Senor_Task04(void *argument)
 {
   /* USER CODE BEGIN Start_Senor_Task04 */
+    (void)argument;
     DHT11_Init();
 
     float temperature = 0.0f;
@@ -457,6 +475,16 @@ void Start_Senor_Task04(void *argument)
 
         update_sensor_display(temperature, humidity, light_raw);
 
+        /* Upload sensor data to ESP-01 for WebSocket forwarding */
+        if(dht11_ok) {
+            char sensor_cmd[64];
+            int temp_int = (int)(temperature * 10.0f);
+            int humi_int = (int)humidity;
+            snprintf(sensor_cmd, sizeof(sensor_cmd),
+                     "SENSOR:%d,%d,%d,0,0", temp_int, humi_int, light_raw);
+            Send_AT_Command(sensor_cmd);
+        }
+
         osDelay(2000);
     }
   /* USER CODE END Start_Senor_Task04 */
@@ -475,7 +503,9 @@ void lvgl_Callback01(void *argument)
 void Callback02(void *argument)
 {
   /* USER CODE BEGIN Callback02 */
-
+  (void)argument;
+  /* One-shot timer: scan WiFi once after power-on (2s delay) */
+  wifi_scan_start();
   /* USER CODE END Callback02 */
 }
 
